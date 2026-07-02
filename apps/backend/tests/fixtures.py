@@ -14,6 +14,7 @@ class MockMemoryTrace:
     last_accessed: datetime
     created_at: datetime
     reason: str = ""
+    status: str = "active"
 
 _SCORE_TABLE = {
     2: (20.0, 10.0),

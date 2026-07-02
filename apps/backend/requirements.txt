@@ -6,6 +6,8 @@ pydantic-settings
 aiosqlite
 apscheduler
 tenacity
+httpx
+python-dotenv
 pytest>=7.4.3
 pytest-asyncio
 pytest-mock

@@ -12,10 +12,6 @@ class ConsolidationEngine:
     def __init__(self, registry: WeightRegistry):
         self.registry = registry
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
-    async def _forget_with_retry(self, node_id: str):
-        """Attempts to remove memory from cognee with exponential backoff."""
-        await cognee_client.forget(node_id)
 
     async def sweep_once(self) -> None:
         """
@@ -33,33 +29,56 @@ class ConsolidationEngine:
             if not traces:
                 break
                 
+            kept_count = 0
             for trace in traces:
-                elapsed_timedelta = now - trace.last_accessed
-                elapsed_hours = elapsed_timedelta.total_seconds() / 3600.0
+                elapsed_days = (now - trace.last_accessed).total_seconds() / 86400.0
                 
                 w_current = calculate_current_weight(
                     trace.weight_initial, 
                     trace.decay_rate, 
-                    elapsed_hours
+                    elapsed_days
                 )
                 
                 if w_current <= settings.prune_floor:
                     # Time to prune
                     if settings.consolidation_dry_run:
                         logger.info(f"[DRY RUN] Would prune node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})")
+                        kept_count += 1
                         continue
                         
                     try:
-                        await self._forget_with_retry(trace.node_id)
+                        # Edge-Stitching logic
+                        neighbors = await cognee_client.recall(trace.text, dataset="general", top_k=3)
+                        active_neighbors = []
+                        if neighbors:
+                            for neighbor in neighbors:
+                                # We only consider it a neighbor if it's not the exact same node we are deleting
+                                n_id = neighbor.get("raw", {}).get("id") or neighbor.get("metadata", {}).get("id") or neighbor.get("text")
+                                if n_id and str(n_id) != str(trace.node_id):
+                                    active_neighbors.append(neighbor.get("text"))
+                                    
+                        if len(active_neighbors) >= 2:
+                            # Synthesize a bridge string
+                            bridge_string = f"Concept '{active_neighbors[0]}' is semantically linked to Concept '{active_neighbors[1]}'."
+                            logger.info(f"Edge-Stitching: Bridging orphaned concepts: '{bridge_string}'")
+                            await cognee_client.remember(bridge_string, dataset="general")
+                        
+                        # Delete from local SQLite registry.
+                        # We intentionally DO NOT call cognee_client.forget() because Cognee v1 
+                        # does not support deletion by custom hash, and our retrieval engine 
+                        # filters all results through this exact SQLite registry anyway.
                         await self.registry.mark_pruned(trace.node_id)
                         logger.info(f"Pruned node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})")
                     except Exception as e:
                         # Log error, mark pending, and move on.
                         logger.error(f"Failed to prune node {trace.node_id} in graph: {e}")
                         await self.registry.mark_pending_prune(trace.node_id)
+                        # pending_prune still counts as active in the query, so it stays in the list
+                        kept_count += 1
                 else:
                     logger.debug(f"Kept node {trace.node_id} (W={w_current:.2f} > {settings.prune_floor})")
+                    kept_count += 1
 
-            offset += batch_size
+            offset += kept_count
 
         logger.info("Consolidation sweep finished.")

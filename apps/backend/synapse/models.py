@@ -1,6 +1,19 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+class IngestPayload(BaseModel):
+    text: str = Field(..., min_length=1, max_length=10000)
+
+class NormalizedPayload(BaseModel):
+    text: str
+    timestamp: float
+    content_hash: str
+
+class ValenceResult(BaseModel):
+    score: int
+    reasoning: str
+    text: str | None = None
 
 class MemoryTrace(BaseModel):
     node_id: str

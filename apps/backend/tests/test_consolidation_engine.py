@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock
 from synapse.consolidation_engine import ConsolidationEngine
 from synapse.config import settings
-from synapse.testing.fixtures import seed_sample_memories
+from tests.fixtures import seed_sample_memories
 
 @pytest.mark.asyncio
 async def test_consolidation_sweep(seeded_registry, mocker):
@@ -16,7 +16,7 @@ async def test_consolidation_sweep(seeded_registry, mocker):
     assert cognee_client.forget.called
     
     active = await seeded_registry.list_active()
-    assert len(active) == 4
+    assert len(active) == 3
 
 @pytest.mark.asyncio
 async def test_sweep_failure_marks_pending(seeded_registry, mocker):
@@ -31,7 +31,7 @@ async def test_sweep_failure_marks_pending(seeded_registry, mocker):
     await engine.sweep_once()
     
     active = await seeded_registry.list_active()
-    assert len(active) == 4
+    assert len(active) == 5
     
     traces = seed_sample_memories()
     # The expected pruned one is score=2, w=20, 72 hours ago

@@ -4,6 +4,7 @@ import { CognitivePipeline } from "@/components/CognitivePipeline";
 import { TeamSection } from "@/components/TeamSection";
 import { HeroSimulation } from "@/components/HeroSimulation";
 import { FAQSection } from "@/components/FAQSection";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default function Home() {
   return (
@@ -13,15 +14,25 @@ export default function Home() {
 
       {/* Feature Sections */}
       <div className="flex flex-col gap-12 pb-12 relative z-10 mt-12">
-        <CognitivePipeline />
-        <ValenceMatrix />
-        <CodePlayground />
+        <ScrollReveal>
+          <CognitivePipeline />
+        </ScrollReveal>
+        <ScrollReveal>
+          <ValenceMatrix />
+        </ScrollReveal>
+        <ScrollReveal>
+          <CodePlayground />
+        </ScrollReveal>
       </div>
 
-      <FAQSection />
+      <ScrollReveal>
+        <FAQSection />
+      </ScrollReveal>
 
       {/* Footer / Team Section */}
-      <TeamSection />
+      <ScrollReveal>
+        <TeamSection />
+      </ScrollReveal>
     </main>
   );
 }

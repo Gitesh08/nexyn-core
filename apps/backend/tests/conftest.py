@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from synapse.registry import WeightRegistry
-from synapse.testing.fixtures import seed_sample_memories
+from tests.fixtures import seed_sample_memories
 
 @pytest.fixture
 async def temp_registry():

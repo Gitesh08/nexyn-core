@@ -5,36 +5,36 @@ import { motion } from "framer-motion";
 const matrixData = [
   {
     score: "1.0",
-    classification: "Trivial",
-    rule: "Casual greetings, typos, filler.",
-    destiny: "Instant Eviction (24h)",
+    classification: "Ephemeral/Junk",
+    rule: "Typos, filler, greetings, trivial chitchat.",
+    destiny: "Instantly Dropped",
     color: "bg-[#888888]", // Grey
   },
   {
     score: "2.0",
-    classification: "Operational",
-    rule: "Debugging steps, active session logs.",
+    classification: "Session Context",
+    rule: "Useful only right now, no long-term value.",
     destiny: "Short Lifecycle (3d)",
     color: "bg-[#06b6d4]", // Cyan
   },
   {
     score: "3.0",
-    classification: "Informational",
-    rule: "System facts, general project metadata.",
+    classification: "General Fact",
+    rule: "Stable, publicly known fact with relevance.",
     destiny: "Standard Decay (Weeks)",
     color: "bg-[#3b82f6]", // Blue
   },
   {
     score: "4.0",
-    classification: "Behavioral",
-    rule: "User preferences, workflow biases.",
-    destiny: "Consolidated via Memify",
+    classification: "High-Value Memory",
+    rule: "Personal preference, recurring pattern, strong opinion.",
+    destiny: "Consolidated via Cognee Cloud",
     color: "bg-[#a855f7]", // Purple
   },
   {
     score: "5.0",
-    classification: "Core Identity",
-    rule: "Architectural secrets, hard constraints.",
+    classification: "Core Instinct",
+    rule: "Explicit directive, hard constraint, identity-level rule.",
     destiny: "Mathematically Immortal",
     color: "bg-[#ef4444]", // Red
   },

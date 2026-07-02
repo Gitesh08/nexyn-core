@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { RotateCcw, Search, Database, Layers } from "lucide-react";
+import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
@@ -19,8 +20,41 @@ export default function LogsPage() {
   const [ingestResult, setIngestResult] = useState<any>(null);
   const [ingesting, setIngesting] = useState(false);
   
+  // Memify state
+  const [memifying, setMemifying] = useState(false);
+
   // Smart Polling State
   const [isPolling, setIsPolling] = useState(false);
+
+  // Settings State
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [nimKey, setNimKey] = useState("");
+  const [cogneeKey, setCogneeKey] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    try {
+      await fetch("http://localhost:8000/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          nvidia_nim_api_key: nimKey || undefined,
+          cognee_api_key: cogneeKey || undefined
+        })
+      });
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        setSettingsOpen(false);
+      }, 1500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchLogs = async () => {
     try {
@@ -46,6 +80,18 @@ export default function LogsPage() {
       await fetchLogs();
     } catch (e) {
       console.error("Failed to clear data", e);
+    }
+  };
+  
+  const handleMemify = async () => {
+    setMemifying(true);
+    try {
+      await fetch("http://localhost:8000/api/memify", { method: "POST" });
+      alert("Graph enrichment complete! (Memify)");
+    } catch (e) {
+      console.error("Failed to memify", e);
+    } finally {
+      setMemifying(false);
     }
   };
   
@@ -129,8 +175,15 @@ export default function LogsPage() {
           <div className="flex items-center gap-4">
             <Image src="/synapse-logo.svg" alt="Synapse" width={48} height={48} />
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-white mb-2 flex items-center gap-4">
                 Synapse Internals
+                <button 
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2 bg-[#1A1A1A] hover:bg-[#333333] border border-[#333333] rounded-md transition-colors text-[#A1A1AA] hover:text-white"
+                  title="Configure API Keys"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
               </h1>
               <p className="text-[#888888] text-sm">Real-time view of the 4-layer biomimetic pipeline.</p>
             </div>
@@ -193,6 +246,14 @@ export default function LogsPage() {
             <h2 className="text-sm font-medium text-white">Registry State (Layers 1-3)</h2>
           </div>
           <div className="flex gap-2">
+            <button 
+              onClick={handleMemify}
+              disabled={memifying}
+              className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
+            >
+              <BrainCircuit className="w-3 h-3" />
+              {memifying ? 'Running Improve()...' : 'Memify Graph'}
+            </button>
             <button 
               onClick={handleClearData}
               className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#ff4444] text-[#ff4444] transition-colors rounded text-xs font-medium flex items-center gap-2"
@@ -365,6 +426,62 @@ export default function LogsPage() {
           )}
         </div>
       </div>
+      
+      <AnimatePresence>
+        {settingsOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[#0A0A0A] border border-[#333333] rounded-lg w-full max-w-md p-6 relative shadow-2xl"
+            >
+              <button onClick={() => setSettingsOpen(false)} className="absolute top-4 right-4 text-[#888888] hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              
+              <h2 className="text-xl font-semibold text-white mb-2">Hackathon Configuration</h2>
+              <p className="text-sm text-[#888888] mb-6">Enter your API keys to self-host this demo.</p>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-2">NVIDIA NIM API Key</label>
+                  <input
+                    type="password"
+                    value={nimKey}
+                    onChange={(e) => setNimKey(e.target.value)}
+                    placeholder="nvapi-..."
+                    className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-2">Cognee API Key</label>
+                  <input
+                    type="password"
+                    value={cogneeKey}
+                    onChange={(e) => setCogneeKey(e.target.value)}
+                    placeholder="Enter Cognee Cloud API Key"
+                    className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setSettingsOpen(false)} className="px-4 py-2 text-sm font-medium text-[#A1A1AA] hover:text-white transition-colors">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={saving || saved}
+                  className="px-4 py-2 bg-white text-black text-sm font-medium rounded-md hover:bg-[#E5E5E5] transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saved ? <><Check className="w-4 h-4" /> Saved</> : (saving ? "Saving..." : "Save Keys")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

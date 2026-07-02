@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, animate } from "framer-motion";
+import Link from "next/link";
 import { Terminal, Send, CheckCircle2, AlertTriangle, Check, Sparkles, FileText, ShieldAlert, RotateCcw, Copy } from "lucide-react";
 
 type SimPhase = "idle" | "ingest" | "memify" | "search" | "lifecycle";
@@ -346,12 +347,12 @@ export function HeroSimulation() {
             <p className="text-[#888888] mb-10 text-center max-w-lg font-normal">
               Experience the difference between naive API hoarding and biomimetic pruning.
             </p>
-            <button
-              onClick={() => setIsPlaygroundOpen(true)}
-              className="px-8 h-12 bg-white hover:bg-[#E5E5E5] text-black rounded font-medium text-sm transition-colors"
+            <Link
+              href="/demo"
+              className="px-8 h-12 bg-white hover:bg-[#E5E5E5] text-black rounded font-medium text-sm transition-colors flex items-center justify-center"
             >
-              Launch Simulation Playground
-            </button>
+              Launch Live Demo
+            </Link>
           </motion.div>
         ) : (
           <motion.div

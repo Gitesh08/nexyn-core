@@ -1,1 +1,1 @@
-# Synapse core package
+"""Synapse backend package."""

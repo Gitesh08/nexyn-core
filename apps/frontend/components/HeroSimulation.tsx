@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, animate } from "framer-motion";
+import Link from "next/link";
 import { Terminal, Send, CheckCircle2, AlertTriangle, Check, Sparkles, FileText, ShieldAlert, RotateCcw, Copy } from "lucide-react";
 
 type SimPhase = "idle" | "ingest" | "memify" | "search" | "lifecycle";
@@ -79,7 +80,7 @@ export function HeroSimulation() {
   const [synapseDiamonds, setSynapseDiamonds] = useState<{id: number, x: number, y: number}[]>([]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("npm install @veda/synapse");
+    navigator.clipboard.writeText("pip install synapse-core");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -324,8 +325,8 @@ export function HeroSimulation() {
             </button>
           </div>
           <div className="p-4 text-sm font-mono text-[#A1A1AA] flex items-center justify-start gap-4">
-            <span className="text-[#333333] select-none">~</span>
-            <span className="text-white">npm install @veda/synapse</span>
+            <span className="text-[#333333] select-none">$</span>
+            <span className="text-white">pip install synapse-core</span>
           </div>
         </motion.div>
       </div>
@@ -346,12 +347,12 @@ export function HeroSimulation() {
             <p className="text-[#888888] mb-10 text-center max-w-lg font-normal">
               Experience the difference between naive API hoarding and biomimetic pruning.
             </p>
-            <button
-              onClick={() => setIsPlaygroundOpen(true)}
-              className="px-8 h-12 bg-white hover:bg-[#E5E5E5] text-black rounded font-medium text-sm transition-colors"
+            <Link
+              href="/demo"
+              className="px-8 h-12 bg-white hover:bg-[#E5E5E5] text-black rounded font-medium text-sm transition-colors flex items-center justify-center"
             >
-              Launch Simulation Playground
-            </button>
+              Launch Live Demo
+            </Link>
           </motion.div>
         ) : (
           <motion.div

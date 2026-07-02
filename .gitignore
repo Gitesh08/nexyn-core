@@ -37,3 +37,9 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Databases & Cache
+*.db
+*.sqlite3
+.pytest_cache/
+.cognee_system/

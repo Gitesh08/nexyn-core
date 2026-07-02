@@ -1,8 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Terminal, Star, GitFork } from "lucide-react";
+import Image from "next/image";
+import { Terminal, Star, GitFork, ArrowRight, Menu, X } from "lucide-react";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -25,6 +27,21 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function Navbar() {
+  const [stars, setStars] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/Gitesh08/synapse-core')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.stargazers_count !== undefined) {
+          setStars(data.stargazers_count.toString());
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: { 
@@ -41,38 +58,75 @@ export function Navbar() {
       animate="visible"
       className="sticky top-0 z-50 w-full border-b border-[#333333] bg-black/80 backdrop-blur-md"
     >
-      <div className="flex h-16 items-center justify-between px-6 max-w-[1400px] mx-auto w-full">
+      <div className="flex h-20 items-center justify-between px-6 max-w-[1400px] mx-auto w-full">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded bg-white flex items-center justify-center text-black">
-            <Terminal className="w-5 h-5" />
-          </div>
-          <span className="font-semibold text-lg tracking-tighter text-white">
-            Veda-Mem <span className="font-normal text-[#888888]">Synapse</span>
-          </span>
+          <Image src="/synapse-logo.svg" alt="Synapse" width={150} height={60} className="object-contain" />
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6">
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="#" className="text-[#A1A1AA] hover:text-white transition-colors">
+            <Link href="/documentation" className="text-[#A1A1AA] hover:text-white transition-colors">
               Documentation
             </Link>
-            <a href="https://github.com/topoteretes/cognee" target="_blank" rel="noopener noreferrer" className="text-[#A1A1AA] hover:text-white transition-colors">
-              Try Cognee
-            </a>
           </nav>
 
-          <div className="flex items-center gap-3 border-l border-[#333333] pl-6">
-            <a href="#" className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded border border-[#333333] text-[#A1A1AA] hover:border-white hover:text-white transition-colors text-xs font-medium bg-transparent">
-              <Star className="w-4 h-4" />
-              <span>Star</span>
-              <span className="bg-[#333333] text-white px-1.5 py-0.5 rounded ml-1">1.2k</span>
-            </a>
-            <a href="#" className="flex items-center justify-center w-8 h-8 rounded border border-[#333333] text-[#A1A1AA] hover:border-white hover:text-white transition-colors bg-transparent">
+          <div className="flex items-center gap-2 md:gap-3 md:border-l md:border-[#333333] md:pl-6">
+            <a href="https://github.com/Gitesh08/synapse-core" target="_blank" rel="noopener noreferrer" className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded border border-[#333333] text-[#A1A1AA] hover:border-white hover:text-white transition-colors text-xs font-medium bg-transparent">
               <GithubIcon className="w-4 h-4" />
+              <span className="hidden md:inline">Star</span>
+              <span className="bg-[#333333] text-white px-1.5 py-0.5 rounded ml-1">{stars || "..."}</span>
             </a>
+            
+            <Link href="/demo" className="hidden sm:flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded bg-white text-black hover:bg-[#E5E5E5] transition-colors text-xs md:text-sm font-medium">
+              Try Synapse <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            </Link>
+            
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="md:hidden flex items-center justify-center p-2 text-[#A1A1AA] hover:text-white"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-b border-[#333333] bg-[#0A0A0A] px-6 py-4 flex flex-col gap-4"
+          >
+            <Link 
+              href="/documentation" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-[#A1A1AA] hover:text-white transition-colors text-sm font-medium"
+            >
+              Documentation
+            </Link>
+            <a 
+              href="https://github.com/Gitesh08/synapse-core" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex sm:hidden items-center gap-2 text-[#A1A1AA] hover:text-white transition-colors text-sm font-medium"
+            >
+              <GithubIcon className="w-4 h-4" />
+              <span>Star on GitHub ({stars || "..."})</span>
+            </a>
+            <Link 
+              href="/demo" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex sm:hidden items-center justify-center gap-2 w-full py-2 rounded bg-white text-black hover:bg-[#E5E5E5] transition-colors text-sm font-medium"
+            >
+              Try Synapse <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }

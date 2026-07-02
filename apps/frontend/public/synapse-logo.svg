@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" width="400" height="150">
+  <defs>
+    <linearGradient id="coreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" /> <stop offset="100%" stop-color="#a855f7" /> </linearGradient>
+    
+    <linearGradient id="activeEdge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="150" fill="transparent"/>
+
+  <line x1="45" y1="45" x2="90" y2="75" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+  
+  <line x1="45" y1="105" x2="90" y2="75" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+  
+  <line x1="30" y1="75" x2="90" y2="75" stroke="url(#activeEdge)" stroke-width="6" stroke-linecap="round"/>
+
+  <circle cx="45" cy="45" r="5" fill="#64748b" />
+  <circle cx="45" cy="105" r="5" fill="#64748b" />
+
+  <circle cx="30" cy="75" r="9" fill="#3b82f6" />
+
+  <circle cx="90" cy="75" r="18" fill="url(#coreGrad)" />
+  <circle cx="90" cy="75" r="6" fill="#ffffff" opacity="0.95" />
+
+  <text x="135" y="91" font-family="'Geist', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="48" font-weight="700" fill="#ffffff" letter-spacing="-1.5">SYNAPSE</text>
+</svg>

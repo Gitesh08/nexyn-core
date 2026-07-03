@@ -16,11 +16,12 @@ class RetrievalEngine:
         # cache key -> (RecallResult, expires_at)
         self._cache: Dict[str, Tuple[RecallResult, datetime]] = {}
 
-    def _get_cache_key(self, request: RecallRequest) -> str:
-        return f"{request.query}:{request.dataset}:{request.top_k}:{request.min_weight}"
+    def _get_cache_key(self, request: RecallRequest, tenant_id: str, user_id: str) -> str:
+        return f"{tenant_id}:{user_id}:{request.query}:{request.dataset}:{request.top_k}:{request.min_weight}"
 
-    async def recall(self, request: RecallRequest) -> RecallResult:
-        cache_key = self._get_cache_key(request)
+    async def recall(self, request: RecallRequest, tenant_id: str, user_id: str, nim_key: str, cognee_key: str, cognee_url: str = None) -> RecallResult:
+        """Executes a Layer 4 recall combining local short-term and remote long-term memory."""
+        cache_key = self._get_cache_key(request, tenant_id, user_id)
         now = datetime.now(timezone.utc)
         
         # Check cache
@@ -33,8 +34,9 @@ class RetrievalEngine:
                 del self._cache[cache_key]
 
         try:
+            dataset_name = f"{tenant_id}_{user_id}_{request.dataset or 'general'}"
             raw_results = await asyncio.wait_for(
-                cognee_client.recall(request.query, request.dataset or "general", request.top_k),
+                cognee_client.recall(request.query, cognee_key, cognee_url=cognee_url, dataset=dataset_name, top_k=request.top_k),
                 timeout=settings.retrieval_timeout_seconds
             )
         except asyncio.TimeoutError:
@@ -89,7 +91,12 @@ class RetrievalEngine:
             if request.min_weight is not None and w_current < request.min_weight:
                 continue
                 
-            semantic_score = float(entry.get("score", entry.get("raw", {}).get("score", 0.0)))
+            score_val = entry.get("score")
+            if score_val is None:
+                score_val = entry.get("raw", {}).get("score", 0.0)
+            if score_val is None:
+                score_val = 0.0
+            semantic_score = float(score_val)
             weight_factor = min(w_current / 100.0, 1.0) 
             composite = (semantic_score * 0.6) + (weight_factor * 0.4)
             

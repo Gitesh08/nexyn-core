@@ -13,7 +13,7 @@ class ConsolidationEngine:
         self.registry = registry
 
 
-    async def sweep_once(self) -> None:
+    async def sweep_once(self, tenant_id: str, user_id: str, cognee_key: str, cognee_url: str = None) -> None:
         """
         Pages through the active registry, evaluates the current weight, 
         and prunes if W_current <= prune_floor.
@@ -25,7 +25,7 @@ class ConsolidationEngine:
         now = datetime.now(timezone.utc)
         
         while True:
-            traces = await self.registry.list_active(batch_size=batch_size, offset=offset)
+            traces = await self.registry.list_active(tenant_id, user_id, batch_size=batch_size, offset=offset)
             if not traces:
                 break
                 
@@ -48,7 +48,8 @@ class ConsolidationEngine:
                         
                     try:
                         # Edge-Stitching logic
-                        neighbors = await cognee_client.recall(trace.text, dataset="general", top_k=3)
+                        dataset_name = f"{tenant_id}_{user_id}_general"
+                        neighbors = await cognee_client.recall(trace.text, cognee_key, cognee_url=cognee_url, dataset=dataset_name, top_k=3)
                         active_neighbors = []
                         if neighbors:
                             for neighbor in neighbors:
@@ -61,13 +62,15 @@ class ConsolidationEngine:
                             # Synthesize a bridge string
                             bridge_string = f"Concept '{active_neighbors[0]}' is semantically linked to Concept '{active_neighbors[1]}'."
                             logger.info(f"Edge-Stitching: Bridging orphaned concepts: '{bridge_string}'")
-                            await cognee_client.remember(bridge_string, dataset="general")
+                            await cognee_client.remember(bridge_string, cognee_key, cognee_url=cognee_url, dataset=dataset_name)
                         
                         # Delete from local SQLite registry.
                         # We intentionally DO NOT call cognee_client.forget() because Cognee v1 
                         # does not support deletion by custom hash, and our retrieval engine 
                         # filters all results through this exact SQLite registry anyway.
                         await self.registry.mark_pruned(trace.node_id)
+                        # Delete from remote
+                        await cognee_client.forget(trace.node_id, cognee_key, cognee_url)
                         logger.info(f"Pruned node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})")
                     except Exception as e:
                         # Log error, mark pending, and move on.

@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import Image from "next/image";
-import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check } from "lucide-react";
+import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const [isConfigured, setIsConfigured] = useState(true);
+  const [backendError, setBackendError] = useState(false);
   
   // Layer 4 state
   const [query, setQuery] = useState("");
@@ -22,6 +26,7 @@ export default function LogsPage() {
   
   // Memify state
   const [memifying, setMemifying] = useState(false);
+  const [memifySuccess, setMemifySuccess] = useState(false);
 
   // Smart Polling State
   const [isPolling, setIsPolling] = useState(false);
@@ -30,53 +35,96 @@ export default function LogsPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [nimKey, setNimKey] = useState("");
   const [cogneeKey, setCogneeKey] = useState("");
+  const [cogneeUrl, setCogneeUrl] = useState("");
+  const [tenantId, setTenantId] = useState("hackathon_demo");
+  const [userId, setUserId] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const getHeaders = () => {
+    return {
+      "Content-Type": "application/json",
+      "x-tenant-id": localStorage.getItem("synapse_tenant_id") || "hackathon_demo",
+      "x-user-id": localStorage.getItem("synapse_user_id") || "anonymous",
+      "x-nim-key": localStorage.getItem("synapse_nim_key") || "",
+      "x-cognee-key": localStorage.getItem("synapse_cognee_key") || "",
+      "x-cognee-url": localStorage.getItem("synapse_cognee_url") || ""
+    };
+  };
+
   const handleSaveSettings = async () => {
     setSaving(true);
+    setBackendError(false);
     try {
-      await fetch("http://localhost:8000/api/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          nvidia_nim_api_key: nimKey || undefined,
-          cognee_api_key: cogneeKey || undefined
-        })
-      });
+      localStorage.setItem("synapse_nim_key", nimKey);
+      localStorage.setItem("synapse_cognee_key", cogneeKey);
+      localStorage.setItem("synapse_cognee_url", cogneeUrl);
+      localStorage.setItem("synapse_tenant_id", tenantId);
+      localStorage.setItem("synapse_user_id", userId);
+      
       setSaved(true);
+      setIsConfigured(true);
       setTimeout(() => {
         setSaved(false);
         setSettingsOpen(false);
+        fetchLogs();
       }, 1500);
     } catch (e) {
       console.error(e);
+      setBackendError(true);
     } finally {
       setSaving(false);
     }
   };
 
+  const checkConfig = async () => {
+    const storedNim = localStorage.getItem("synapse_nim_key");
+    const storedCognee = localStorage.getItem("synapse_cognee_key");
+    const storedCogneeUrl = localStorage.getItem("synapse_cognee_url");
+    const storedTenant = localStorage.getItem("synapse_tenant_id") || "hackathon_demo";
+    let storedUser = localStorage.getItem("synapse_user_id");
+    
+    if (!storedUser) {
+      storedUser = Math.random().toString(36).substring(2, 10);
+      localStorage.setItem("synapse_user_id", storedUser);
+    }
+
+    setNimKey(storedNim || "");
+    setCogneeKey(storedCognee || "");
+    setCogneeUrl(storedCogneeUrl || "");
+    setTenantId(storedTenant);
+    setUserId(storedUser);
+
+    if (!storedNim || !storedCognee) {
+      setIsConfigured(false);
+      setSettingsOpen(true);
+    } else {
+      setIsConfigured(true);
+    }
+  };
+
   const fetchLogs = async () => {
+    if (!isConfigured) {
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch("http://localhost:8000/api/memories");
+      const res = await fetch(`${API_BASE}/api/memories`, { headers: getHeaders() });
+      if (!res.ok) throw new Error("Failed to fetch logs");
       const data = await res.json();
       setLogs(data);
       setNow(Date.now());
       
-      // Auto-stop polling if nothing is evaluating
-      if (isPolling && !data.some((log: any) => log.status === 'evaluating (layer 2)')) {
-        setIsPolling(false);
-      }
+      // Removed smart polling auto-stop to guarantee perfect sync during the demo
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
   };
-
   const handleClearData = async () => {
     try {
-      await fetch("http://localhost:8000/api/memories", { method: "DELETE" });
+      await fetch(`${API_BASE}/api/memories`, { method: "DELETE", headers: getHeaders() });
       await fetchLogs();
     } catch (e) {
       console.error("Failed to clear data", e);
@@ -86,8 +134,9 @@ export default function LogsPage() {
   const handleMemify = async () => {
     setMemifying(true);
     try {
-      await fetch("http://localhost:8000/api/memify", { method: "POST" });
-      alert("Graph enrichment complete! (Memify)");
+      await fetch(`${API_BASE}/api/memify`, { method: "POST", headers: getHeaders() });
+      setMemifySuccess(true);
+      setTimeout(() => setMemifySuccess(false), 3000);
     } catch (e) {
       console.error("Failed to memify", e);
     } finally {
@@ -95,15 +144,28 @@ export default function LogsPage() {
     }
   };
   
+  const [sweeping, setSweeping] = useState(false);
+  const handleSweep = async () => {
+    setSweeping(true);
+    try {
+      await fetch(`${API_BASE}/api/sweep`, { method: "POST", headers: getHeaders() });
+      await fetchLogs();
+    } catch (e) {
+      console.error("Failed to sweep", e);
+    } finally {
+      setSweeping(false);
+    }
+  };
+
   const handleRecall = async (e: any) => {
     e.preventDefault();
     if (!query) return;
     
     setSearching(true);
     try {
-      const res = await fetch("http://localhost:8000/api/recall", {
+      const res = await fetch(`${API_BASE}/api/recall`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getHeaders(),
         body: JSON.stringify({ query, top_k: 3 })
       });
       const data = await res.json();
@@ -123,18 +185,15 @@ export default function LogsPage() {
     
     setIngesting(true);
     try {
-      const res = await fetch("http://localhost:8000/synapse/ingest", {
+      const res = await fetch(`${API_BASE}/synapse/ingest`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getHeaders(),
         body: JSON.stringify({ text: ingestText })
       });
       const data = await res.json();
       setIngestResult(data);
       setIngestText("");
-      
-      // Smart Polling: Turn on aggressive polling, it will auto-disable when evaluation finishes!
-      setIsPolling(true);
-      
+      // Continuous polling handles sync automatically
     } catch (e) {
       console.error(e);
       setIngestResult({ error: String(e) });
@@ -144,19 +203,69 @@ export default function LogsPage() {
   };
 
   useEffect(() => {
-    fetchLogs();
+    checkConfig().then(() => {
+      fetchLogs();
+    });
   }, []);
 
-  // Smart Polling Effect (checks every 2 seconds instead of 1 to reduce load)
+  // SSE Real-time Streaming
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPolling) {
-      interval = setInterval(() => {
-        fetchLogs();
-      }, 2000);
-    }
-    return () => clearInterval(interval);
-  }, [isPolling]);
+    if (!isConfigured) return;
+    
+    // Construct headers for SSE (EventSource doesn't support custom headers easily, so we use query params)
+    const tenantId = localStorage.getItem("synapse_tenant_id") || "hackathon_demo";
+    const userId = localStorage.getItem("synapse_user_id") || "anonymous";
+    
+    // Since native EventSource doesn't support headers, we must send the keys in a way the backend can read them.
+    // Wait, the backend expects `x-tenant-id` and `x-user-id` as HEADERS!
+    // We'll need a custom fetch-based SSE or we'll update the backend to accept query parameters!
+    // Since we're using a fetch-based approach for SSE, let's just use it:
+    const abortController = new AbortController();
+    
+    const connectSSE = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/memories/stream`, {
+          headers: getHeaders(),
+          signal: abortController.signal
+        });
+        
+        if (!response.body) return;
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop() || "";
+          
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const dataStr = line.substring(6);
+              try {
+                const data = JSON.parse(dataStr);
+                setLogs(data);
+                setNow(Date.now());
+                setLoading(false);
+              } catch (e) {
+                console.error("SSE JSON Parse error:", e);
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error("SSE fetch error:", err);
+        }
+      }
+    };
+    
+    connectSSE();
+    return () => abortController.abort();
+  }, [isConfigured]);
 
   // Local UI Ticker (Updates age and weight smoothly every second without hammering the server)
   useEffect(() => {
@@ -223,7 +332,7 @@ export default function LogsPage() {
             />
             <button 
               type="submit"
-              disabled={ingesting || !ingestText.trim()}
+              disabled={ingesting || !ingestText.trim() || !isConfigured}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
             >
               {ingesting ? 'Ingesting...' : 'Ingest'}
@@ -245,30 +354,73 @@ export default function LogsPage() {
             <Database className="w-4 h-4 text-[#888888]" />
             <h2 className="text-sm font-medium text-white">Registry State (Layers 1-3)</h2>
           </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleMemify}
-              disabled={memifying}
-              className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
-            >
-              <BrainCircuit className="w-3 h-3" />
-              {memifying ? 'Running Improve()...' : 'Memify Graph'}
-            </button>
-            <button 
-              onClick={handleClearData}
-              className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#ff4444] text-[#ff4444] transition-colors rounded text-xs font-medium flex items-center gap-2"
-            >
-              Clear Registry
-            </button>
-            <button 
-              onClick={fetchLogs}
-              className="px-3 py-1.5 bg-white hover:bg-[#E5E5E5] text-black transition-colors rounded text-xs font-medium flex items-center gap-2"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Sync State
-            </button>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <button 
+                onClick={handleSweep}
+                disabled={sweeping || !isConfigured}
+                title="Manually fast-forward time and prune dead memories."
+                className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#22c55e] text-[#22c55e] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
+              >
+                <FastForward className="w-3 h-3" />
+                {sweeping ? 'Consolidating...' : 'Sweep & Prune'}
+              </button>
+              <button 
+                onClick={handleMemify}
+                disabled={memifying || !isConfigured}
+                title="Convert unstructured text traces into semantic knowledge graph nodes."
+                className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
+              >
+                <BrainCircuit className="w-3 h-3" />
+                {memifying ? 'Running Improve()...' : 'Memify Graph'}
+              </button>
+              <button 
+                onClick={handleClearData}
+                disabled={!isConfigured}
+                title="Wipe your personal memory graph clean."
+                className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#ff4444] text-[#ff4444] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
+              >
+                Clear Registry
+              </button>
+              <button 
+                onClick={fetchLogs}
+                disabled={!isConfigured}
+                title="Refresh the table below."
+                className="px-3 py-1.5 bg-white hover:bg-[#E5E5E5] text-black transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Sync State
+              </button>
+            </div>
+            <div className="text-[10px] text-[#888888]">
+              <strong>Tip:</strong> Hover over the buttons to see what they do!
+            </div>
           </div>
         </div>
+        
+        <AnimatePresence>
+          {memifySuccess && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-4 p-4 bg-[#0A0A0A] border border-[#a855f7] rounded-md shadow-lg shadow-purple-500/10 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#a855f7]/20 flex items-center justify-center text-[#a855f7]">
+                  <Check className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-white">Graph Enrichment Complete!</h3>
+                  <p className="text-xs text-[#888888]">Your memory traces have been successfully woven into the Cognee semantic graph.</p>
+                </div>
+              </div>
+              <button onClick={() => setMemifySuccess(false)} className="text-[#555555] hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         {loading ? (
           <div className="animate-pulse space-y-2">
@@ -310,14 +462,14 @@ export default function LogsPage() {
                   }
                   
                   return (
-                  <tr key={log.node_id} className="hover:bg-[#111111] transition-colors">
+                    <React.Fragment key={log.node_id}>
+                  <tr className="border-b border-[#222222] hover:bg-[#111111] transition-colors">
                     <td className="p-3 border-r border-[#333333] max-w-xs">
                       <div className="text-[10px] text-[#555555] font-mono mb-1 leading-none">{log.node_id.substring(0, 8)}</div>
                       <div className="text-sm text-[#E5E5E5] truncate" title={log.text}>{log.text}</div>
                     </td>
-                    
                     <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <span className="text-sm text-white font-mono">{log.valence_score}</span>
+                       <span className="text-sm text-white font-mono">{log.valence_score}</span>
                     </td>
                     <td className="p-3 border-r border-[#333333] text-center align-middle">
                       <div className="text-sm text-[#4CAF50] font-mono font-medium">
@@ -351,6 +503,15 @@ export default function LogsPage() {
                       </div>
                     </td>
                   </tr>
+                  {log.reason && log.status !== 'evaluating (layer 2)' && (
+                    <tr className="border-b border-[#222222] bg-[#050505]">
+                      <td colSpan={6} className="p-3 pl-6 text-xs text-[#888888] font-mono italic">
+                        <span className="text-[#A1A1AA] font-semibold not-italic">L2 Rationale: </span> 
+                        {log.reason}
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 )})}
                 {logs.length === 0 && (
                   <tr>
@@ -381,7 +542,7 @@ export default function LogsPage() {
             />
             <button 
               type="submit"
-              disabled={searching || !query.trim()}
+              disabled={searching || !query.trim() || !isConfigured}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
             >
               {searching ? 'Searching...' : 'Recall'}
@@ -441,11 +602,22 @@ export default function LogsPage() {
               </button>
               
               <h2 className="text-xl font-semibold text-white mb-2">Hackathon Configuration</h2>
-              <p className="text-sm text-[#888888] mb-6">Enter your API keys to self-host this demo.</p>
+              <p className="text-sm text-[#888888] mb-6">Enter your API keys and User ID to isolate your graph.</p>
               
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-2">NVIDIA NIM API Key</label>
+              {backendError && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm">
+                  Backend connection failed. Is it running?
+                </div>
+              )}
+              
+              <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="pb-4 border-b border-[#333333]">
+                  <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-1">
+                    NVIDIA NIM API Key
+                  </label>
+                  <a href="https://build.nvidia.com/meta/llama-3_1-8b-instruct" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-blue-400 hover:underline mb-2">
+                    Get your free NVIDIA NIM API key here &rarr;
+                  </a>
                   <input
                     type="password"
                     value={nimKey}
@@ -454,15 +626,56 @@ export default function LogsPage() {
                     className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-2">Cognee API Key</label>
-                  <input
-                    type="password"
-                    value={cogneeKey}
-                    onChange={(e) => setCogneeKey(e.target.value)}
-                    placeholder="Enter Cognee Cloud API Key"
-                    className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
-                  />
+                
+                <div className="pt-2">
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium">Cognee Configuration</label>
+                    <a href="https://platform.cognee.ai/api-keys" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-blue-400 hover:underline">
+                      Manage Cognee Cloud Tenants & Keys &rarr;
+                    </a>
+                  </div>
+                  <div className="space-y-3 mt-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#777777] font-medium mb-1">Tenant ID</label>
+                      <input
+                        type="text"
+                        value={tenantId}
+                        onChange={(e) => setTenantId(e.target.value)}
+                        placeholder="hackathon_demo"
+                        className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#777777] font-medium mb-1">User ID (Isolates your graph)</label>
+                      <input
+                        type="text"
+                        value={userId}
+                        onChange={(e) => setUserId(e.target.value)}
+                        placeholder="user_123"
+                        className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#777777] font-medium mb-1">Cognee API Key</label>
+                      <input
+                        type="password"
+                        value={cogneeKey}
+                        onChange={(e) => setCogneeKey(e.target.value)}
+                        placeholder="Enter Cognee Cloud API Key"
+                        className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#777777] font-medium mb-1">Cognee API URL</label>
+                      <input
+                        type="url"
+                        value={cogneeUrl}
+                        onChange={(e) => setCogneeUrl(e.target.value)}
+                        placeholder="e.g. https://tenant-12345.aws.cognee.ai"
+                        className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               

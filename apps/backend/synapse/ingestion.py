@@ -5,14 +5,9 @@ from pydantic import BaseModel, Field
 from .config import settings
 from typing import List
 import re
+from datetime import datetime
 
-class IngestPayload(BaseModel):
-    text: str = Field(..., min_length=1, max_length=10000)
-
-class NormalizedPayload(BaseModel):
-    text: str
-    timestamp: float
-    content_hash: str
+from .models import IngestPayload, NormalizedPayload
 
 def get_trigrams(text: str) -> set:
     words = text.lower().split()
@@ -55,33 +50,36 @@ class DuplicateCache:
 
 duplicate_cache = DuplicateCache()
 
-def normalize(payload: IngestPayload) -> List[NormalizedPayload]:
+def normalize(payload: IngestPayload, tenant_id: str, user_id: str, nim_key: str, cognee_key: str, cognee_url: str = None) -> List[NormalizedPayload]:
     """Sensory Fission: Chunk long texts and return a list of NormalizedPayloads."""
-    stripped_text = payload.text.strip()
+    text = payload.text
+    timestamp = datetime.now().timestamp()
     
-    # Simple semantic chunking if text > 1000 chars
+    # 1. Very naive sentence-based splitting logic (for hackathon speed)
+    # A real implementation would use NLTK or Spacy, or recursive character splitting
+    import re
+    sentences = re.split(r'(?<=[.!?]) +', text)
+    
     chunks = []
-    if len(stripped_text) > 1000:
-        # Split by paragraphs or sentences
-        sentences = re.split(r'(?<=[.!?])\s+', stripped_text)
-        current_chunk = ""
-        for sentence in sentences:
-            if len(current_chunk) + len(sentence) > 500:
-                if current_chunk:
-                    chunks.append(current_chunk.strip())
-                current_chunk = sentence
-            else:
-                current_chunk += (" " if current_chunk else "") + sentence
-        if current_chunk:
-            chunks.append(current_chunk.strip())
-    else:
-        chunks = [stripped_text]
+    current_chunk = ""
+    for sentence in sentences:
+        if len(current_chunk) + len(sentence) < 1000:
+            current_chunk += sentence + " "
+        else:
+            if current_chunk:
+                chunks.append(current_chunk.strip())
+            current_chunk = sentence + " "
+            
+    if current_chunk:
+        chunks.append(current_chunk.strip())
         
     payloads = []
-    timestamp = time.time()
     for chunk in chunks:
         if not chunk: continue
         content_hash = hashlib.sha256(chunk.encode("utf-8")).hexdigest()
-        payloads.append(NormalizedPayload(text=chunk, timestamp=timestamp, content_hash=content_hash))
+        payloads.append(NormalizedPayload(
+            text=chunk, timestamp=timestamp, content_hash=content_hash,
+            tenant_id=tenant_id, user_id=user_id, nim_key=nim_key, cognee_key=cognee_key, cognee_url=cognee_url
+        ))
         
     return payloads

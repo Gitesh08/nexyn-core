@@ -12,7 +12,9 @@ class WeightRegistry:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS weight_registry (
-                    node_id TEXT PRIMARY KEY,
+                    node_id TEXT,
+                    tenant_id TEXT NOT NULL,
+                    user_id TEXT NOT NULL,
                     text TEXT NOT NULL,
                     dataset TEXT NOT NULL,
                     valence_score INTEGER NOT NULL,
@@ -21,7 +23,8 @@ class WeightRegistry:
                     last_accessed TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     reason TEXT,
-                    status TEXT NOT NULL
+                    status TEXT NOT NULL,
+                    PRIMARY KEY (node_id, tenant_id, user_id)
                 )
             ''')
             
@@ -38,10 +41,10 @@ class WeightRegistry:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute('''
                 INSERT INTO weight_registry (
-                    node_id, text, dataset, valence_score, weight_initial, 
+                    node_id, tenant_id, user_id, text, dataset, valence_score, weight_initial, 
                     decay_rate, last_accessed, created_at, reason, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(node_id) DO UPDATE SET
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(node_id, tenant_id, user_id) DO UPDATE SET
                     text=excluded.text,
                     dataset=excluded.dataset,
                     valence_score=excluded.valence_score,
@@ -51,7 +54,7 @@ class WeightRegistry:
                     reason=excluded.reason,
                     status=excluded.status
             ''', (
-                trace.node_id, trace.text, trace.dataset, trace.valence_score,
+                trace.node_id, trace.tenant_id, trace.user_id, trace.text, trace.dataset, trace.valence_score,
                 trace.weight_initial, trace.decay_rate, 
                 trace.last_accessed.isoformat(), trace.created_at.isoformat(), 
                 trace.reason, trace.status
@@ -66,6 +69,8 @@ class WeightRegistry:
                 if row:
                     return MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],
@@ -86,6 +91,8 @@ class WeightRegistry:
                 if row:
                     return MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],
@@ -108,6 +115,8 @@ class WeightRegistry:
                 if row:
                     return MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],
@@ -120,19 +129,21 @@ class WeightRegistry:
                     )
                 return None
 
-    async def list_active(self, batch_size: int = 100, offset: int = 0) -> List[MemoryTrace]:
+    async def list_active(self, tenant_id: str, user_id: str, batch_size: int = 100, offset: int = 0) -> List[MemoryTrace]:
         """Fetch a paginated list of nodes that are not yet pruned."""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
-                'SELECT * FROM weight_registry WHERE status != "pruned" LIMIT ? OFFSET ?',
-                (batch_size, offset)
+                'SELECT * FROM weight_registry WHERE status != "pruned" AND tenant_id = ? AND user_id = ? LIMIT ? OFFSET ?',
+                (tenant_id, user_id, batch_size, offset)
             ) as cursor:
                 rows = await cursor.fetchall()
                 results = []
                 for row in rows:
                     results.append(MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],
@@ -145,19 +156,21 @@ class WeightRegistry:
                     ))
                 return results
 
-    async def list_all(self, batch_size: int = 100, offset: int = 0) -> List[MemoryTrace]:
+    async def list_all(self, tenant_id: str, user_id: str, batch_size: int = 100, offset: int = 0) -> List[MemoryTrace]:
         """Fetch a paginated list of ALL nodes, including pruned ones, for debugging/logs."""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
-                'SELECT * FROM weight_registry ORDER BY created_at DESC LIMIT ? OFFSET ?',
-                (batch_size, offset)
+                'SELECT * FROM weight_registry WHERE tenant_id = ? AND user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+                (tenant_id, user_id, batch_size, offset)
             ) as cursor:
                 rows = await cursor.fetchall()
                 results = []
                 for row in rows:
                     results.append(MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],
@@ -186,9 +199,9 @@ class WeightRegistry:
             await db.execute('UPDATE weight_registry SET last_accessed = ? WHERE node_id = ?', (now, node_id))
             await db.commit()
 
-    async def clear_all(self) -> None:
+    async def clear_all(self, tenant_id: str, user_id: str) -> None:
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute('DELETE FROM weight_registry')
+            await db.execute('DELETE FROM weight_registry WHERE tenant_id = ? AND user_id = ?', (tenant_id, user_id))
             await db.commit()
 
     async def delete(self, node_id: str) -> None:
@@ -205,6 +218,8 @@ class WeightRegistry:
                 for row in rows:
                     results.append(MemoryTrace(
                         node_id=row['node_id'],
+                        tenant_id=row['tenant_id'],
+                        user_id=row['user_id'],
                         text=row['text'],
                         dataset=row['dataset'],
                         valence_score=row['valence_score'],

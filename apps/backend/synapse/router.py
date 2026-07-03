@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from synapse.ingestion import IngestPayload, normalize, duplicate_cache
 from synapse.registry import QueueRegistry
 
@@ -10,8 +10,15 @@ async def enqueue(payload_dict: dict):
     await ingest_queue.enqueue(payload_dict)
 
 @router.post("/ingest", response_model=dict)
-async def ingest(payload: IngestPayload):
-    payloads = normalize(payload)
+async def ingest(
+    payload: IngestPayload,
+    x_tenant_id: str = Header(..., alias="x-tenant-id"),
+    x_user_id: str = Header(..., alias="x-user-id"),
+    x_nim_key: str = Header(..., alias="x-nim-key"),
+    x_cognee_key: str = Header(..., alias="x-cognee-key"),
+    x_cognee_url: str = Header(None, alias="x-cognee-url")
+):
+    payloads = normalize(payload, x_tenant_id, x_user_id, x_nim_key, x_cognee_key, x_cognee_url)
     
     responses = []
     for p in payloads:

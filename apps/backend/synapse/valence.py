@@ -7,29 +7,34 @@ from synapse.config import settings
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """
-You are the memory valence evaluator for an autonomous AI agent. Your task is to score the long-term biological importance of a piece of information.
-Consider context: Is this a transient event, a persistent fact, a subjective preference, or a hard system constraint?
+You are the memory valence evaluator for an autonomous AI agent. Your task is to extract, clean, and score the long-term biological importance of information.
+The input may contain typos, slang, fragmented thoughts, implicit context, or unexpected unstructured data. You must elegantly handle this noise and extract the underlying truth.
 
-Output ONLY valid JSON representing an array of objects. If the input contains multiple independent concepts with wildly different importance, split them into multiple objects. Otherwise, return an array with a single object:
-[{"text": "<the specific substring or concept>", "valence_score": <int 1-5>, "reason": "<one sentence>"}, ...]
-No preamble. No markdown.
+CRITICAL EXTRACTION RULES:
+1. NORMALIZE & FIX: Silently correct typos, grammar, and expand slang. Resolve ambiguous pronouns if context allows.
+2. PRESERVE RELATIONAL DENSITY: NEVER extract single isolated nouns (e.g., do not extract just "AWS"). You must extract full, self-contained semantic statements that preserve the absolute relational truth (e.g., "The user is planning a cloud migration from GCP to AWS next week").
+3. DECOMPOSE ORGTHOGONAL FACTS: If the input contains multiple entirely unrelated concepts (e.g., "I hate apples and my API key is 1234"), split them into multiple JSON objects. If they are part of the same logical structure, keep them together.
 
-Scoring rubric:
-1 = Ephemeral/Junk — Momentary events, typos, casual greetings, or transient states with zero relevance beyond the next 5 minutes.
-2 = Session Context — Working memory. Useful for the current conversation or task, but loses value once the task is complete.
-3 = General Knowledge — Stable, objective facts, structural knowledge, or public information that provides context but doesn't define core behavior.
-4 = High-Value Memory — Subjective preferences, recurring behavioral patterns, important relationships, or significant insights that should heavily influence future interactions.
-5 = Core Instinct / Absolute Rule — Hard constraints, fundamental identity traits, safety protocols, or explicit directives that must NEVER be violated or forgotten.
+Format:
+Output ONLY valid JSON representing an array of objects. No preamble, no markdown.
+[{"text": "<complete semantic statement>", "valence_score": <int 1-5>, "reason": "<short rationale>"}, ...]
+
+SCORING RUBRIC:
+1 = Ephemeral/Junk — Momentary events, casual chatter, transient states, or things with zero relevance beyond the next 5 minutes.
+2 = Session Context — Working memory. Useful for the current conversation, but loses value once the immediate task is done.
+3 = General Knowledge — Stable, objective facts, system architecture details, or public info that provides context but isn't a core directive.
+4 = High-Value Memory — Subjective user preferences, recurring behavioral patterns, or significant insights that should heavily influence future workflows.
+5 = Core Instinct / Absolute Rule — Hard safety constraints, fundamental identity traits, or explicit directives that must NEVER be violated or forgotten.
 """
 
 async def determine_valence(payload: NormalizedPayload) -> list[ValenceResult]:
-    if not settings.NVIDIA_NIM_API_KEY:
-        logger.debug("NVIDIA_NIM_API_KEY not set. Defaulting valence score to 3.")
+    if not payload.nim_key:
+        logger.debug("NIM API key missing from payload. Defaulting valence score to 3.")
         return [ValenceResult(score=3, reasoning="NIM API key missing. Defaulting to general fact.", text=payload.text)]
     
     url = "https://integrate.api.nvidia.com/v1/chat/completions"
     headers = {
-        "Authorization": f"Bearer {settings.NVIDIA_NIM_API_KEY}",
+        "Authorization": f"Bearer {payload.nim_key}",
         "Content-Type": "application/json"
     }
     data = {
@@ -63,13 +68,13 @@ async def determine_valence(payload: NormalizedPayload) -> list[ValenceResult]:
                 
                 results = []
                 for item in parsed:
-                    if not isinstance(item, dict) or "score" not in item:
-                        logger.warning("Valence item missing 'score' or not a dict. Falling back.")
+                    if not isinstance(item, dict) or ("score" not in item and "valence_score" not in item):
+                        logger.warning("Valence item missing 'valence_score' or not a dict. Falling back.")
                         continue
                     results.append(ValenceResult(
-                        score=item["score"],
+                        score=item.get("valence_score") or item.get("score"),
                         text=item.get("text", payload.text),
-                        reasoning=item.get("reasoning", "Parsed from fallback.")
+                        reasoning=item.get("reason", item.get("reasoning", "Parsed from fallback."))
                     ))
                 
                 if not results:

@@ -9,6 +9,11 @@ class NormalizedPayload(BaseModel):
     text: str
     timestamp: float
     content_hash: str
+    tenant_id: str
+    user_id: str
+    nim_key: Optional[str] = None
+    cognee_key: Optional[str] = None
+    cognee_url: Optional[str] = None
 
 class ValenceResult(BaseModel):
     score: int
@@ -17,6 +22,8 @@ class ValenceResult(BaseModel):
 
 class MemoryTrace(BaseModel):
     node_id: str
+    tenant_id: str
+    user_id: str
     text: str
     dataset: str
     valence_score: int

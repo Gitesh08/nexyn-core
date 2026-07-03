@@ -5,22 +5,16 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
-env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
-from fastapi import FastAPI, BackgroundTasks, Header
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-import asyncio
-import json
-import math
-import hashlib
 from synapse.registry import WeightRegistry
 from synapse.retrieval_engine import RetrievalEngine
 from synapse.models import RecallRequest
-from tests.fixtures import seed_sample_memories
 from synapse.router import router as synapse_router
 from pydantic import BaseModel
+import uvicorn
 
 class ConfigRequest(BaseModel):
     nvidia_nim_api_key: str | None = None
@@ -31,13 +25,10 @@ from synapse.consolidation_engine import ConsolidationEngine
 from typing import List
 import math
 import cognee
-import os
 
 logger = logging.getLogger(__name__)
 
 background_tasks = set()
-
-# Background sweeper removed in favor of manual sweep endpoint
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -103,7 +94,6 @@ async def get_memories(
     x_tenant_id: str = Header(..., alias="x-tenant-id"),
     x_user_id: str = Header(..., alias="x-user-id")
 ):
-    """Returns all traces in the registry for the logs dashboard."""
     registry = WeightRegistry()
     await registry.init_db()
     traces = await registry.list_all(x_tenant_id, x_user_id, batch_size=1000)
@@ -117,46 +107,11 @@ async def get_memories(
         
     return response
 
-async def event_generator(tenant_id: str, user_id: str):
-    registry = WeightRegistry()
-    await registry.init_db()
-    last_hash = ""
-    while True:
-        traces = await registry.list_all(tenant_id, user_id, batch_size=1000)
-        
-        response = []
-        for t in traces:
-            t_dict = t.model_dump() if hasattr(t, "model_dump") else t.dict()
-            if math.isinf(t_dict["weight_initial"]):
-                t_dict["weight_initial"] = None
-            response.append(t_dict)
-            
-        current_data = json.dumps(response, default=str)
-        current_hash = hashlib.md5(current_data.encode()).hexdigest()
-        
-        if current_hash != last_hash:
-            last_hash = current_hash
-            yield f"data: {current_data}\n\n"
-            
-        await asyncio.sleep(1)
-
-@app.get("/api/memories/stream")
-async def stream_memories(
-    x_tenant_id: str = Header(..., alias="x-tenant-id"),
-    x_user_id: str = Header(..., alias="x-user-id")
-):
-    """SSE endpoint for real-time memory trace updates."""
-    return StreamingResponse(
-        event_generator(x_tenant_id, x_user_id),
-        media_type="text/event-stream"
-    )
-
 @app.delete("/api/memories")
 async def clear_memories(
     x_tenant_id: str = Header(..., alias="x-tenant-id"),
     x_user_id: str = Header(..., alias="x-user-id")
 ):
-    """Clears all traces in the registry (useful for testing/demo)."""
     registry = WeightRegistry()
     await registry.init_db()
     await registry.clear_all(x_tenant_id, x_user_id)
@@ -171,14 +126,9 @@ async def execute_recall(
     x_cognee_key: str = Header(..., alias="x-cognee-key"),
     x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
-    """Executes a Layer 4 recall for the frontend dashboard."""
     registry = WeightRegistry()
     await registry.init_db()
     engine = RetrievalEngine(registry)
-    # The RetrievalEngine needs to be updated to accept the keys/IDs, but since we are short on time,
-    # and recall uses Cognee, we'll update it directly.
-    # Actually wait, RetrievalEngine is in synapse/retrieval_engine.py.
-    # Let's pass the keys to it!
     result = await engine.recall(request, x_tenant_id, x_user_id, x_nim_key, x_cognee_key, x_cognee_url)
     return result.model_dump() if hasattr(result, "model_dump") else result.dict()
 
@@ -189,7 +139,6 @@ async def execute_sweep(
     x_cognee_key: str = Header(..., alias="x-cognee-key"),
     x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
-    """Manually triggers a Layer 3 sweep for the user."""
     registry = WeightRegistry()
     await registry.init_db()
     engine = ConsolidationEngine(registry)
@@ -203,8 +152,15 @@ async def execute_memify(
     x_cognee_key: str = Header(..., alias="x-cognee-key"),
     x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
-    """Triggers the Hackathon required cognee.cognify() pipeline."""
     from synapse.cognee_client import cognify
     dataset_name = f"{x_tenant_id}_{x_user_id}_general"
     await cognify(x_cognee_key, x_cognee_url, datasets=[dataset_name])
     return {"status": "ok", "message": "Memify (cognify) pipeline triggered successfully"}
+
+def run_server():
+    """Entry point for the synapse-server CLI command."""
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("synapse.main:app", host="0.0.0.0", port=port, reload=False)
+
+if __name__ == "__main__":
+    run_server()

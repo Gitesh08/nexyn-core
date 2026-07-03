@@ -17,7 +17,7 @@ class EvaluationEngine:
     def __init__(self, registry: WeightRegistry):
         self.registry = registry
 
-    async def detect_contradiction(self, new_text: str, existing_rules: list[dict]) -> str | None:
+    async def detect_contradiction(self, new_text: str, existing_rules: list[dict], nim_key: str) -> str | None:
         """
         Detect if the new core rule contradicts any of the existing core rules.
         Returns the node_id of the contradicting rule if found, otherwise None.
@@ -25,8 +25,8 @@ class EvaluationEngine:
         if not existing_rules:
             return None
 
-        if not settings.NVIDIA_NIM_API_KEY:
-            logger.warning("NVIDIA_NIM_API_KEY not set. Skipping contradiction detection.")
+        if not nim_key:
+            logger.warning("NIM API key not set. Skipping contradiction detection.")
             return None
 
         rules_data = [{"id": rule.get("raw", {}).get("id") or rule.get("metadata", {}).get("id") or rule.get("text"), "text": rule["text"]} for rule in existing_rules if rule.get("text")]
@@ -45,7 +45,7 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
 
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
         headers = {
-            "Authorization": f"Bearer {settings.NVIDIA_NIM_API_KEY}",
+            "Authorization": f"Bearer {nim_key}",
             "Content-Type": "application/json"
         }
         data = {
@@ -84,6 +84,8 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
             # Write intermediate state for UI visibility (Layer 2 Output)
             temp_trace = MemoryTrace(
                 node_id=fission_hash,
+                tenant_id=payload.tenant_id,
+                user_id=payload.user_id,
                 text=fission_text,
                 dataset="general" if valence.score < 5 else "core_rules",
                 valence_score=valence.score,
@@ -103,17 +105,26 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                 
             if valence.score in [2, 3, 4]:
                 # Resonance uses the specific fission text
-                fission_payload = NormalizedPayload(text=fission_text, timestamp=payload.timestamp, content_hash=fission_hash)
+                fission_payload = NormalizedPayload(
+                    text=fission_text, 
+                    timestamp=payload.timestamp, 
+                    content_hash=fission_hash,
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id,
+                    nim_key=payload.nim_key,
+                    cognee_key=payload.cognee_key,
+                    cognee_url=payload.cognee_url
+                )
                 resonance_hit = await check_resonance(fission_payload)
                 
                 if resonance_hit:
                     node_id = resonance_hit.get("raw", {}).get("id") or resonance_hit.get("metadata", {}).get("id") or resonance_hit.get("text")
                     if node_id:
                         # Biological Cross-Examination: check if it actually contradicts instead of blindly reinforcing
-                        contradicted_id = await self.detect_contradiction(fission_text, [resonance_hit])
+                        contradicted_id = await self.detect_contradiction(fission_text, [resonance_hit], payload.nim_key)
                         if contradicted_id:
                             logger.info(f"Resonance contradicted {contradicted_id}, forgetting old memory.")
-                            await cognee_client.forget(contradicted_id)
+                            await cognee_client.forget(contradicted_id, payload.cognee_key)
                             await self.registry.delete(contradicted_id)
                             resonance_hit = None # Fall through to save new memory
                         else:
@@ -124,8 +135,9 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                             continue
                     
                 # Need to commit new memory
-                result = await cognee_client.remember(fission_text, dataset="general")
-                await cognee_client.cognify(datasets=["general"])
+                dataset_name = f"{payload.tenant_id}_{payload.user_id}_general"
+                result = await cognee_client.remember(fission_text, payload.cognee_key, dataset=dataset_name)
+                await cognee_client.cognify(payload.cognee_key, datasets=[dataset_name])
                 
                 node_id = fission_hash
                 if isinstance(result, dict):
@@ -139,6 +151,8 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                 params = get_kinetic_params(valence.score)
                 trace = MemoryTrace(
                     node_id=str(node_id),
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id,
                     text=fission_text,
                     dataset="general",
                     valence_score=valence.score,
@@ -175,7 +189,7 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
 
                     url = "https://integrate.api.nvidia.com/v1/chat/completions"
                     headers = {
-                        "Authorization": f"Bearer {settings.NVIDIA_NIM_API_KEY}",
+                        "Authorization": f"Bearer {payload.nim_key}",
                         "Content-Type": "application/json"
                     }
                     data = {
@@ -193,7 +207,7 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                             
                             # Wipe all old rules from cognee and local registry
                             for rule in active_core_rules:
-                                await cognee_client.forget(rule.node_id)
+                                await cognee_client.forget(rule.node_id, payload.cognee_key)
                             await self.registry.delete_dataset("core_rules")
                             
                             # Set payload to be the new master compressed node
@@ -204,17 +218,18 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                         logger.error(f"Ego Death compression failed: {e}")
                 
                 # Core rule (Normal Flow)
-                existing_rules = await cognee_client.recall(fission_text, dataset="core_rules", top_k=10)
-                contradicted_id = await self.detect_contradiction(fission_text, existing_rules)
+                dataset_core = f"{payload.tenant_id}_{payload.user_id}_core_rules"
+                existing_rules = await cognee_client.recall(fission_text, payload.cognee_key, dataset=dataset_core, top_k=10)
+                contradicted_id = await self.detect_contradiction(fission_text, existing_rules, payload.nim_key)
                 
                 if contradicted_id:
                     logger.info(f"Rule contradicts {contradicted_id}, forgetting old rule.")
-                    await cognee_client.forget(contradicted_id)
+                    await cognee_client.forget(contradicted_id, payload.cognee_key)
                     await self.registry.delete(contradicted_id)
                     logger.info(f"Purged zombie core rule {contradicted_id} from local registry.")
                     
-                result = await cognee_client.remember(fission_text, dataset="core_rules")
-                await cognee_client.cognify(datasets=["core_rules"])
+                result = await cognee_client.remember(fission_text, payload.cognee_key, dataset=dataset_core)
+                await cognee_client.cognify(payload.cognee_key, datasets=[dataset_core])
                 
                 node_id = fission_hash
                 if isinstance(result, dict):
@@ -228,6 +243,8 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                 params = get_kinetic_params(5)
                 trace = MemoryTrace(
                     node_id=str(node_id),
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id,
                     text=fission_text,
                     dataset="core_rules",
                     valence_score=5,

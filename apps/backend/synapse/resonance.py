@@ -12,7 +12,8 @@ async def check_resonance(payload: NormalizedPayload) -> dict | None:
     If no, returns None.
     """
     try:
-        results = await cognee_client.recall(payload.text, top_k=1)
+        dataset_name = f"{payload.tenant_id}_{payload.user_id}_general"
+        results = await cognee_client.recall(payload.text, payload.cognee_key, dataset=dataset_name, top_k=1)
         if not results:
             return None
 

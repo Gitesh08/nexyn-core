@@ -36,21 +36,57 @@ def _normalize_recall_entry(entry) -> dict:
             "metadata": getattr(entry, "metadata", {}) or {},
         }
 
-async def remember(text: str, dataset: str = "general"):
-    """Wrapper for cognee.remember. Returns RememberResult."""
-    return await cognee.remember(text, dataset_name=dataset)
+import asyncio
 
-async def cognify(datasets: list[str] = None):
+_cognee_lock = asyncio.Lock()
+
+async def _safe_cognee_execute(api_key: str, custom_url: str, func, *args, **kwargs):
+    """
+    Acquires a lock, configures Cognee for the specific user's API key (or falls back to env vars),
+    executes the function, and releases the lock safely.
+    """
+    from synapse.config import settings
+    import os
+    fallback_url = os.getenv("COGNEE_URL", "")
+    fallback_key = os.getenv("COGNEE_API_KEY", "")
+    
+    active_key = api_key if api_key else fallback_key
+    active_url = custom_url if custom_url else fallback_url
+    
+    async with _cognee_lock:
+        if active_url and active_key:
+            try:
+                import sys
+                import io
+                from contextlib import redirect_stdout
+                # Always ensure we are connected with the correct key for THIS specific request
+                # Suppress Cognee's noisy prints to keep the terminal clean for the demo
+                with redirect_stdout(io.StringIO()):
+                    await cognee.disconnect()
+                    await cognee.serve(url=active_url, api_key=active_key)
+            except Exception as e:
+                logger.warning(f"Cognee serve failed: {e}")
+                
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            logger.error(f"Cognee operation failed: {e}")
+            raise
+
+async def remember(text: str, api_key: str, cognee_url: str = None, dataset: str = "general"):
+    """Wrapper for cognee.remember."""
+    return await _safe_cognee_execute(api_key, cognee_url, cognee.remember, text, dataset_name=dataset)
+
+async def cognify(api_key: str, cognee_url: str = None, datasets: list[str] = None):
     """Wrapper for cognee.cognify to process pipelines."""
     if datasets:
-        return await cognee.cognify(datasets=datasets)
-    return await cognee.cognify()
+        return await _safe_cognee_execute(api_key, cognee_url, cognee.cognify, datasets=datasets)
+    return await _safe_cognee_execute(api_key, cognee_url, cognee.cognify)
 
-async def recall(query: str, dataset: str = "general", top_k: int = 5) -> list[dict]:
+async def recall(query: str, api_key: str, cognee_url: str = None, dataset: str = "general", top_k: int = 5) -> list[dict]:
     """Wrapper for cognee.search to return exact chunk matches."""
-    try:
+    async def _search():
         entries = await cognee.search(query_text=query, query_type="CHUNKS", datasets=[dataset])
-        # cognee.search returns a list of dataset result dicts: [{'dataset_name': 'general', 'search_result': [...]}]
         normalized = []
         for dataset_entry in entries:
             if isinstance(dataset_entry, dict) and "search_result" in dataset_entry:
@@ -58,22 +94,23 @@ async def recall(query: str, dataset: str = "general", top_k: int = 5) -> list[d
                     normalized.append(_normalize_recall_entry(chunk))
             else:
                 normalized.append(_normalize_recall_entry(dataset_entry))
-        
         return normalized[:top_k]
+        
+    try:
+        return await _safe_cognee_execute(api_key, cognee_url, _search)
     except Exception as e:
-        logger.warning(f"Cognee search failed (likely because graph DB is empty/uninitialized): {e}")
+        logger.warning(f"Cognee search failed: {e}")
         return []
 
-async def improve(dataset: str = "general") -> None:
+async def improve(api_key: str, cognee_url: str = None, dataset: str = "general") -> None:
     """Wrapper for cognee.improve to reinforce a dataset globally."""
-    await cognee.improve(dataset=dataset, run_in_background=True)
+    await _safe_cognee_execute(api_key, cognee_url, cognee.improve, dataset=dataset, run_in_background=True)
 
-async def forget(node_id: str) -> None:
+async def forget(node_id: str, api_key: str, cognee_url: str = None) -> None:
     """Wrapper for cognee.forget to prune a memory."""
-    # node_id must be a UUID for data_id
     import uuid
     try:
         data_id_uuid = uuid.UUID(node_id)
-        await cognee.forget(data_id=data_id_uuid)
+        await _safe_cognee_execute(api_key, cognee_url, cognee.forget, data_id=data_id_uuid)
     except Exception as e:
         logger.warning(f"Cognee forget failed for node_id {node_id}: {e}")

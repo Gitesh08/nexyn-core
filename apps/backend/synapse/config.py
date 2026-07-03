@@ -1,12 +1,19 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+import os
+from pathlib import Path
+
+# Create default DB path in user home directory
+default_db_dir = Path.home() / ".synapse"
+default_db_dir.mkdir(parents=True, exist_ok=True)
+default_db_path = str(default_db_dir / "synapse_registry_v3.db")
+
 class Settings(BaseSettings):
     # Consolidation
-    decay_sweep_interval_seconds: int = 900
+    # Consolidation Layer configuration
     consolidation_dry_run: bool = False
-    prune_floor: float = 0.0
-
-    # Retrieval
+    prune_floor: float = 0.5
+    consolidation_interval_seconds: int = 3600
     retrieval_timeout_seconds: float = 30.0
     retrieval_cache_ttl_seconds: int = 30
     reinforce_on_recall: bool = False
@@ -16,7 +23,7 @@ class Settings(BaseSettings):
     dedup_cache_size: int = 10000
 
     # Storage
-    registry_db_path: str = "synapse_registry.db"
+    registry_db_path: str = os.getenv("SYNAPSE_DB_PATH", default_db_path)
 
     # External APIs
     NVIDIA_NIM_API_KEY: str | None = None

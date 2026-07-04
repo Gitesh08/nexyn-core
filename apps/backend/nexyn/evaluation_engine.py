@@ -135,9 +135,23 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                                 responses.append({"status": "resonance_hit", "valence_score": valence.score, "reasoning": valence.reasoning, "node_id": node_id})
                                 continue
                         
-                    # Need to commit new memory
+                    # Store in Cognee with embedded metadata so recall works without SQLite
                     dataset_name = f"{payload.tenant_id}_{payload.user_id}_general"
-                    result = await cognee_client.remember(fission_text, payload.cognee_key, cognee_url=payload.cognee_url, dataset=dataset_name)
+                    params = get_kinetic_params(valence.score)
+                    meta = {
+                        "node_id": fission_hash,
+                        "valence": valence.score,
+                        "w_initial": params["w_initial"],
+                        "decay_rate": params["decay_rate"],
+                        "tenant_id": payload.tenant_id,
+                        "user_id": payload.user_id,
+                    }
+                    result = await cognee_client.remember(
+                        fission_text, payload.cognee_key,
+                        cognee_url=payload.cognee_url,
+                        dataset=dataset_name,
+                        metadata=meta,
+                    )
                     
                     node_id = fission_hash
                     if isinstance(result, dict):
@@ -148,7 +162,6 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                         node_id = result.content_hash
                         logger.warning(f"RememberResult items empty. Falling back to content_hash {node_id}")
 
-                    params = get_kinetic_params(valence.score)
                     trace = MemoryTrace(
                         node_id=str(node_id),
                         tenant_id=payload.tenant_id,

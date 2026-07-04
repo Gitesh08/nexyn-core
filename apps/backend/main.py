@@ -53,22 +53,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("Running Cognee locally")
     
-    # Start Layer 2 consumer
+    # Initialize Registry
     registry = WeightRegistry()
     await registry.init_db()
-    
-    consumer_task = asyncio.create_task(start_consumer(registry))
-    background_tasks.add(consumer_task)
     
     yield
     
     # Shutdown
     logger.info("Shutting down...")
-    consumer_task.cancel()
-    try:
-        await consumer_task
-    except asyncio.CancelledError:
-        pass
         
     try:
         await cognee.disconnect()

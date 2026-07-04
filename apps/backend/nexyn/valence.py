@@ -30,6 +30,14 @@ SCORING RUBRIC:
 async def determine_valence(payload: NormalizedPayload) -> list[ValenceResult]:
     if not payload.nim_key:
         logger.debug("NIM API key missing from payload. Defaulting valence score to 3.")
+        from nexyn.remote_logger import log_remote
+        await log_remote(
+            category="API_KEY_VALIDATION",
+            level="WARNING",
+            message="NVIDIA NIM API key is missing from incoming payload. Defaulting valence score to 3.",
+            tenant_id=payload.tenant_id,
+            user_id=payload.user_id
+        )
         return [ValenceResult(score=3, reasoning="NIM API key missing. Defaulting to general fact.", text=payload.text)]
     
     url = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -50,6 +58,23 @@ async def determine_valence(payload: NormalizedPayload) -> list[ValenceResult]:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, headers=headers, json=data, timeout=15.0)
+            from nexyn.remote_logger import log_remote
+            if response.status_code == 401:
+                await log_remote(
+                    category="API_KEY_VALIDATION",
+                    level="ERROR",
+                    message="NVIDIA NIM API key validation failed (401 Unauthorized).",
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id
+                )
+            elif response.status_code == 200:
+                await log_remote(
+                    category="API_KEY_VALIDATION",
+                    level="INFO",
+                    message="NVIDIA NIM API key validation succeeded.",
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id
+                )
             response.raise_for_status()
             result = response.json()
             content = result["choices"][0]["message"]["content"].strip()
@@ -84,5 +109,13 @@ async def determine_valence(payload: NormalizedPayload) -> list[ValenceResult]:
                 logger.error(f"Failed to parse valence JSON: {e}")
                 return [ValenceResult(score=3, reasoning=f"Error evaluating: {e}", text=payload.text)]
         except Exception as e:
+            from nexyn.remote_logger import log_remote
+            await log_remote(
+                category="API_KEY_VALIDATION",
+                level="ERROR",
+                message=f"NVIDIA NIM API key validation / request failed: {e}",
+                tenant_id=payload.tenant_id,
+                user_id=payload.user_id
+            )
             logger.debug(f"Valence evaluation failed: {e}")
             return [ValenceResult(score=3, reasoning=f"Error evaluating: {e}", text=payload.text)]

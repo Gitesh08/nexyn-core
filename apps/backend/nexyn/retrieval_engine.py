@@ -245,12 +245,28 @@ class RetrievalEngine:
         cognee_key: str,
         cognee_url: str = None,
     ) -> RecallResult:
+        from nexyn.remote_logger import log_remote
+        await log_remote(
+            category="LAYER_4_RETRIEVE",
+            level="INFO",
+            message=f"Retrieval requested for query: '{request.query}'",
+            tenant_id=tenant_id,
+            user_id=user_id
+        )
+
         cache_key = self._cache_key(request, tenant_id, user_id)
         now = datetime.now(timezone.utc)
 
         if cache_key in self._cache:
             cached, expires_at = self._cache[cache_key]
             if now < expires_at:
+                await log_remote(
+                    category="LAYER_4_RETRIEVE",
+                    level="INFO",
+                    message="Retrieval served from cache.",
+                    tenant_id=tenant_id,
+                    user_id=user_id
+                )
                 return cached
             del self._cache[cache_key]
 
@@ -258,10 +274,18 @@ class RetrievalEngine:
         top_k = request.top_k or 5
 
         # Tier 1
-        cognee_matches = await self._cognee_tier(
-            request.query, cognee_key, cognee_url,
-            dataset_name, top_k, request.min_weight, now
-        )
+        try:
+            cognee_matches = await asyncio.wait_for(
+                self._cognee_tier(
+                    request.query, cognee_key, cognee_url,
+                    dataset_name, top_k, request.min_weight, now
+                ),
+                timeout=settings.retrieval_timeout_seconds
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Recall timed out after {settings.retrieval_timeout_seconds}s for query: {request.query}")
+            return RecallResult(matches=[], error="timeout", is_timeout=True)
+        
         logger.info(f"Tier 1 (Cognee CHUNKS): {len(cognee_matches)} matches")
 
         # Tier 2 only if Tier 1 returned nothing
@@ -283,6 +307,18 @@ class RetrievalEngine:
         if settings.reinforce_on_recall:
             for m in final_matches:
                 await self.reinforce(m.node_id)
+
+        await log_remote(
+            category="LAYER_4_RETRIEVE",
+            level="INFO",
+            message=f"Recalled {len(final_matches)} matches",
+            tenant_id=tenant_id,
+            user_id=user_id,
+            details={
+                "query": request.query,
+                "matches": [{"text": m.text[:50], "score": m.composite_score} for m in final_matches]
+            }
+        )
 
         return result
 

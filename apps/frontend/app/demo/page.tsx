@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState, Fragment } from "react";
 import Image from "next/image";
-import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward } from "lucide-react";
+import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DemoScriptSidebar } from "@/components/DemoScriptSidebar";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
@@ -13,6 +14,7 @@ export default function LogsPage() {
   const [now, setNow] = useState(Date.now());
   const [isConfigured, setIsConfigured] = useState(true);
   const [backendError, setBackendError] = useState(false);
+  const [showScript, setShowScript] = useState(false);
 
   // Layer 4 state
   const [query, setQuery] = useState("");
@@ -205,6 +207,7 @@ export default function LogsPage() {
   };
 
   useEffect(() => {
+    document.title = "Nexyn | Internals Dashboard";
     checkConfig().then(() => {
       fetchLogs();
     });
@@ -278,19 +281,29 @@ export default function LogsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-sans">
-      <div className="max-w-7xl mx-auto pt-16">
-
-        {/* HEADER */}
+    <div className="min-h-screen bg-black text-white p-4 lg:p-8 font-sans">
+      <div className="max-w-[1600px] mx-auto pt-8 lg:pt-16 flex flex-col lg:flex-row gap-8">
+        
+        {/* LEFT COLUMN: Main App */}
+        <div className="flex-1 min-w-0">
+          {/* HEADER */}
         <div className="flex justify-between items-end mb-12 border-b border-[#333333] pb-6">
           <div className="flex items-center gap-4">
             <Image src="/nexyn-logo.svg" alt="Nexyn" width={48} height={48} />
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-white mb-2 flex items-center gap-4">
+              <h1 className="text-3xl font-semibold tracking-tight text-white mb-2 flex flex-wrap items-center gap-4">
                 Nexyn Internals
                 <button
+                  onClick={() => setShowScript(!showScript)}
+                  className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded-md text-sm font-medium flex items-center gap-2"
+                  title="Toggle testing guide"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  How to test?
+                </button>
+                <button
                   onClick={() => setSettingsOpen(true)}
-                  className="p-2 bg-[#1A1A1A] hover:bg-[#333333] border border-[#333333] rounded-md transition-colors text-[#A1A1AA] hover:text-white"
+                  className="p-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#333333] rounded-md transition-colors text-[#A1A1AA] hover:text-white"
                   title="Configure API Keys"
                 >
                   <Settings className="w-5 h-5" />
@@ -590,6 +603,30 @@ export default function LogsPage() {
             </div>
           )}
         </div>
+        </div>
+
+        {/* RIGHT COLUMN: Demo Script */}
+        <AnimatePresence>
+          {showScript && (
+            <motion.div 
+              initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+              animate={{ opacity: 1, width: 350, marginLeft: 32 }}
+              exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+              className="hidden lg:block shrink-0 border-l border-[#333333] pt-8 lg:pt-0 overflow-hidden"
+            >
+              <div className="w-[350px]">
+                <DemoScriptSidebar onClose={() => setShowScript(false)} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Mobile script fallback */}
+        {showScript && (
+          <div className="block lg:hidden w-full border-t border-[#333333] pt-8 mt-8">
+            <DemoScriptSidebar onClose={() => setShowScript(false)} />
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

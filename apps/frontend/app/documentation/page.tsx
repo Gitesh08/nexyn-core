@@ -275,7 +275,7 @@ export default function DocumentationPage() {
 
               <div className="bg-[#111111] border border-[#1A1A1A] rounded-xl overflow-hidden shadow-2xl">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1A1A1A] bg-[#0A0A0A] overflow-x-auto">
-                  {['remember', 'cognify', 'search', 'forget'].map((tab) => (
+                  {['add', 'cognify', 'search', 'sweep'].map((tab) => (
                     <button 
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -283,7 +283,7 @@ export default function DocumentationPage() {
                         activeTab === tab ? "bg-[#3b82f6]/10 text-[#3b82f6]" : "text-[#888888] hover:text-white hover:bg-[#1A1A1A]"
                       }`}
                     >
-                      cognee.{tab}()
+                      {tab === 'sweep' ? 'nexyn.sweep()' : `cognee.${tab}()`}
                     </button>
                   ))}
                 </div>
@@ -297,47 +297,46 @@ export default function DocumentationPage() {
                       transition={{ duration: 0.2 }}
                       className="w-full"
                     >
-                      {activeTab === 'remember' && (
-                        <pre className="m-0 leading-relaxed"><code>{`async def remember(text: str, dataset: str = "general"):
+                      {activeTab === 'add' && (
+                        <pre className="m-0 leading-relaxed"><code>{`async def add(data: Any, *args, **kwargs):
     """
-    Safely injects text into the temporary storage layer.
-    This prepares the nodes for the enrichment pipeline.
+    Intercepts cognee.add() to route data through the Sensory Buffer 
+    and evaluate its Valence before permanent storage.
     """
-    return await cognee.remember(text, dataset_name=dataset)`}</code></pre>
+    payload = NormalizedPayload(text=data, ...)
+    await eval_engine.evaluate(payload)
+    
+    # If high valence, proceeds to native Cognee storage
+    return await original_add(data, *args, **kwargs)`}</code></pre>
                       )}
                       {activeTab === 'cognify' && (
-                        <pre className="m-0 leading-relaxed"><code>{`async def cognify(datasets: list[str] = None):
+                        <pre className="m-0 leading-relaxed"><code>{`async def cognify(*args, **kwargs):
     """
     Triggers the cognitive graph building process. 
-    We use cognify instead of improve to respect cloud tenant limits
-    while still actively enriching the vectors.
+    Nexyn intercepts this purely to log the state transition,
+    allowing Cognee to permanently encode the high-valence memories.
     """
-    if datasets:
-        return await cognee.cognify(datasets=datasets)
-    return await cognee.cognify()`}</code></pre>
+    return await original_cognify(*args, **kwargs)`}</code></pre>
                       )}
                       {activeTab === 'search' && (
-                        <pre className="m-0 leading-relaxed"><code>{`async def recall(query: str, dataset: str = "general") -> list[dict]:
+                        <pre className="m-0 leading-relaxed"><code>{`async def search(query_text: str, *args, **kwargs) -> list[dict]:
     """
-    Searches the graph and normalizes the payload response.
-    Cognee returns various types based on version, so we strictly 
-    type cast the dictionaries for our React frontend.
+    Searches the graph. Nexyn intercepts to apply decay physics, 
+    filter out forgotten nodes, and trigger 'rehearsal' (strengthening
+    the memory weight of accessed nodes).
     """
-    entries = await cognee.search(
-        query_text=query, 
-        query_type="CHUNKS", 
-        datasets=[dataset]
-    )
-    return normalize_entries(entries)`}</code></pre>
+    req = RecallRequest(query=query_text)
+    result = await retrieval_engine.recall(req)
+    return [match.dict() for match in result.matches]`}</code></pre>
                       )}
-                      {activeTab === 'forget' && (
-                        <pre className="m-0 leading-relaxed"><code>{`async def forget(node_id: str) -> None:
+                      {activeTab === 'sweep' && (
+                        <pre className="m-0 leading-relaxed"><code>{`async def sweep():
     """
-    Prunes a specific memory node based on its unique identifier.
-    Used exclusively by the Ego Decay layer to eliminate bloat.
+    Nexyn-specific background consolidation process.
+    Fast-forwards time, decaying all memory weights and permanently
+    deleting nodes from Cognee that have fallen below the survival threshold.
     """
-    data_id_uuid = uuid.UUID(node_id)
-    await cognee.forget(data_id=data_id_uuid)`}</code></pre>
+    await consolidation_engine.sweep_once(...)`}</code></pre>
                       )}
                     </motion.div>
                   </AnimatePresence>
@@ -379,11 +378,19 @@ export default function DocumentationPage() {
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-4">Step One: Installation</h3>
                     <p className="mb-4">
-                      Clone the repository and install the required dependencies using your terminal. Ensure you have Python installed on your machine before running the setup commands.
+                      Install the package via your preferred package manager. Ensure you have Python installed on your machine.
                     </p>
-                    <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-5 font-mono text-sm">
-                      <span className="text-[#555555] select-none mr-4">$</span>
-                      <span className="text-white">pip install nexyn core</span>
+                    <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-5 font-mono text-sm flex flex-col gap-3">
+                      <div>
+                        <span className="text-[#555555] block mb-1"># Using standard pip</span>
+                        <span className="text-[#555555] select-none mr-4">$</span>
+                        <span className="text-white">pip install nexyn-core</span>
+                      </div>
+                      <div>
+                        <span className="text-[#555555] block mb-1"># Using uv (Recommended)</span>
+                        <span className="text-[#555555] select-none mr-4">$</span>
+                        <span className="text-white">uv pip install nexyn-core</span>
+                      </div>
                     </div>
                   </div>
 
@@ -396,9 +403,39 @@ export default function DocumentationPage() {
 
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-4">Step Three: Integration</h3>
-                    <p>
-                      Send data directly to the ingest endpoints. The biomimetic engine will automatically score the data and route it through the four cognitive layers. You can easily monitor the real time status of your memory graph through the beautiful live demo dashboard.
+                    <p className="mb-6">
+                      Send data directly to the ingest endpoints. The biomimetic engine will automatically score the data and route it through the four cognitive layers. You can easily monitor the real time status of your memory graph through the live dashboard.
                     </p>
+                    <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-6 font-mono text-sm overflow-x-auto">
+                      <pre className="text-[#A1A1AA] m-0"><code>{`import asyncio
+import cognee
+import nexyn
+
+async def main():
+    # 1. Initialize Nexyn's cognitive layer
+    await nexyn.inject(
+        nim_api_key="nvapi-your-key-here", 
+        cognee_api_key="your_cognee_api_key",
+        cognee_url="https://api.cognee.ai",
+        tenant_id="default",
+        user_id="user_123"
+    )
+
+    # 2. Add memories normally (Nexyn automatically scores Valence)
+    await cognee.add("Doug is the groom. The wedding is Sunday.")
+    
+    # 3. Compile the Cognee knowledge graph
+    await cognee.cognify()
+    
+    # 4. Search triggers decay physics and memory rehearsal
+    results = await cognee.search("Where is Doug?")
+    
+    # 5. Fast-forward time to prune dead memories
+    await nexyn.sweep()
+
+if __name__ == "__main__":
+    asyncio.run(main())`}</code></pre>
+                    </div>
                   </div>
                 </div>
               </div>

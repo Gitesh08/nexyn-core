@@ -31,7 +31,11 @@ Instead of treating every piece of information equally, Nexyn automatically scor
 ## 📦 Installation
 
 ```bash
+# Using pip
 pip install nexyn-core
+
+# Using uv (Recommended for blazing fast installs)
+uv pip install nexyn-core
 ```
 
 ## 🚀 Usage

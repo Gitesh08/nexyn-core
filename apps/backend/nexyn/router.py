@@ -22,7 +22,6 @@ async def process_payloads_background(payloads):
 @router.post("/ingest", response_model=dict)
 async def ingest(
     payload: IngestPayload,
-    background_tasks: BackgroundTasks,
     x_tenant_id: str = Header(..., alias="x-tenant-id"),
     x_user_id: str = Header(..., alias="x-user-id"),
     x_nim_key: str = Header(..., alias="x-nim-key"),
@@ -43,6 +42,7 @@ async def ingest(
         responses.append({"status": "evaluating", "content_hash": p.content_hash, "text": p.text[:50] + "..." if len(p.text)>50 else p.text})
             
     if valid_payloads:
-        background_tasks.add_task(process_payloads_background, valid_payloads)
+        # AWAIT SYNCHRONOUSLY! Vercel Serverless Python kills background tasks instantly.
+        await process_payloads_background(valid_payloads)
         
     return {"status": "processed", "chunks": len(payloads), "results": responses}

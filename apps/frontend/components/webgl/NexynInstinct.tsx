@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-export function SynapseInstinct() {
+export function NexynInstinct() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const count = 10;

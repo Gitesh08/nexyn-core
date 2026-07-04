@@ -5,8 +5,8 @@ import { OrbitControls } from '@react-three/drei';
 import { Suspense } from 'react';
 import { VanillaIngestion } from './webgl/VanillaIngestion';
 import { VanillaRetrieval } from './webgl/VanillaRetrieval';
-import { SynapseIngestion } from './webgl/SynapseIngestion';
-import { SynapseInstinct } from './webgl/SynapseInstinct';
+import { NexynIngestion } from './webgl/NexynIngestion';
+import { NexynInstinct } from './webgl/NexynInstinct';
 
 const WindowCard = ({ title, subtitle, children }: { title: string, subtitle: string, children: React.ReactNode }) => (
   <div className="flex flex-col bg-[#0B0F19] rounded-xl border border-white/10 overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-[1.02]">
@@ -26,7 +26,7 @@ export function ComparisonGrid() {
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold text-white mb-4">Architectural Comparison</h2>
         <p className="text-[#94A3B8] max-w-2xl mx-auto">
-          See how Project Synapse solves the traditional AI memory bloat problem in real-time.
+          See how Project Nexyn solves the traditional AI memory bloat problem in real-time.
         </p>
       </div>
       
@@ -51,19 +51,19 @@ export function ComparisonGrid() {
           </Canvas>
         </WindowCard>
         
-        <WindowCard title="Synapse: Ingestion" subtitle="Buddhi Filter: Pruning low-valence data">
+        <WindowCard title="Nexyn: Ingestion" subtitle="Buddhi Filter: Pruning low-valence data">
           <Canvas camera={{ position: [0, 2, 8] }} dpr={[1, 2]} gl={{ antialias: false }}>
             <Suspense fallback={null}>
-              <SynapseIngestion />
+              <NexynIngestion />
               <OrbitControls enableZoom={false} />
             </Suspense>
           </Canvas>
         </WindowCard>
         
-        <WindowCard title="Synapse: Instinct" subtitle="Neural Synthesis: High-density cores">
+        <WindowCard title="Nexyn: Instinct" subtitle="Neural Synthesis: High-density cores">
           <Canvas camera={{ position: [0, 0, 7] }} dpr={[1, 2]} gl={{ antialias: false }}>
             <Suspense fallback={null}>
-              <SynapseInstinct />
+              <NexynInstinct />
               <OrbitControls enableZoom={false} />
             </Suspense>
           </Canvas>

@@ -1,4 +1,4 @@
-from synapse.decay import calculate_current_weight
+from nexyn.decay import calculate_current_weight
 
 def test_decay_normal():
     w = calculate_current_weight(50.0, 3.5, 6.0)

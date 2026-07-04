@@ -65,7 +65,7 @@ export function ArchitecturalComparison() {
             vx: 0, vy: 0
           });
         }
-        // Inject right (Synapse)
+        // Inject right (Nexyn)
         if (Math.random() > 0.1) {
           state.rightParticles.push({
             x: 0,
@@ -121,7 +121,7 @@ export function ArchitecturalComparison() {
       ctxL.strokeStyle = "rgba(239, 68, 68, 0.8)";
       ctxL.stroke();
 
-      // --- RIGHT CANVAS RENDER (Synapse Pruning) ---
+      // --- RIGHT CANVAS RENDER (Nexyn Pruning) ---
       const filterX = wR * 0.4;
       const coreX = wR * 0.75;
       const coreY = hR / 2;
@@ -246,7 +246,7 @@ export function ArchitecturalComparison() {
         <div className="flex flex-col bg-[#05070A] rounded-2xl border border-[#384A6E]/30 overflow-hidden shadow-2xl">
           <div className="px-6 py-4 bg-[#384A6E]/10 border-b border-[#384A6E]/30">
             <h3 className="text-[#F8FAFC] font-semibold text-lg">The Solution: Organic Pruning</h3>
-            <p className="text-[#94A3B8] text-xs mt-1">Project Synapse Valency Engine</p>
+            <p className="text-[#94A3B8] text-xs mt-1">Project Nexyn Valency Engine</p>
           </div>
           <div className="relative h-[300px] w-full">
             <canvas ref={rightCanvasRef} className="absolute inset-0 w-full h-full" />

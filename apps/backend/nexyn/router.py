@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Header
-from synapse.ingestion import IngestPayload, normalize, duplicate_cache
-from synapse.registry import QueueRegistry
+from nexyn.ingestion import IngestPayload, normalize, duplicate_cache
+from nexyn.registry import QueueRegistry
 
-router = APIRouter(prefix="/synapse")
+router = APIRouter(prefix="/nexyn")
 
 ingest_queue = QueueRegistry()
 

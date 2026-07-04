@@ -9,10 +9,10 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from synapse.registry import WeightRegistry
-from synapse.retrieval_engine import RetrievalEngine
-from synapse.models import RecallRequest
-from synapse.router import router as synapse_router
+from nexyn.registry import WeightRegistry
+from nexyn.retrieval_engine import RetrievalEngine
+from nexyn.models import RecallRequest
+from nexyn.router import router as nexyn_router
 from pydantic import BaseModel
 import uvicorn
 
@@ -20,8 +20,8 @@ class ConfigRequest(BaseModel):
     nvidia_nim_api_key: str | None = None
     cognee_api_key: str | None = None
 
-from synapse.consumer import start_consumer
-from synapse.consolidation_engine import ConsolidationEngine
+from nexyn.consumer import start_consumer
+from nexyn.consolidation_engine import ConsolidationEngine
 from typing import List
 import math
 import cognee
@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
-app = FastAPI(title="Synapse Core API", lifespan=lifespan)
+app = FastAPI(title="Nexyn Core API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,11 +77,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(synapse_router)
+app.include_router(nexyn_router)
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Synapse Core Backend running"}
+    return {"status": "ok", "message": "Nexyn Core Backend running"}
 
 @app.get("/health")
 def health_check():
@@ -152,15 +152,15 @@ async def execute_memify(
     x_cognee_key: str = Header(..., alias="x-cognee-key"),
     x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
-    from synapse.cognee_client import cognify
+    from nexyn.cognee_client import cognify
     dataset_name = f"{x_tenant_id}_{x_user_id}_general"
     await cognify(x_cognee_key, x_cognee_url, datasets=[dataset_name])
     return {"status": "ok", "message": "Memify (cognify) pipeline triggered successfully"}
 
 def run_server():
-    """Entry point for the synapse-server CLI command."""
+    """Entry point for the nexyn-server CLI command."""
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("synapse.main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("nexyn.main:app", host="0.0.0.0", port=port, reload=False)
 
 if __name__ == "__main__":
     run_server()

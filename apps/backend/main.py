@@ -15,19 +15,19 @@ import asyncio
 import json
 import math
 import hashlib
-from synapse.registry import WeightRegistry
-from synapse.retrieval_engine import RetrievalEngine
-from synapse.models import RecallRequest
+from nexyn.registry import WeightRegistry
+from nexyn.retrieval_engine import RetrievalEngine
+from nexyn.models import RecallRequest
 from tests.fixtures import seed_sample_memories
-from synapse.router import router as synapse_router
+from nexyn.router import router as nexyn_router
 from pydantic import BaseModel
 
 class ConfigRequest(BaseModel):
     nvidia_nim_api_key: str | None = None
     cognee_api_key: str | None = None
 
-from synapse.consumer import start_consumer
-from synapse.consolidation_engine import ConsolidationEngine
+from nexyn.consumer import start_consumer
+from nexyn.consolidation_engine import ConsolidationEngine
 from typing import List
 import math
 import cognee
@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
-app = FastAPI(title="Synapse Core API", lifespan=lifespan)
+app = FastAPI(title="Nexyn Core API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,11 +86,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(synapse_router)
+app.include_router(nexyn_router)
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Synapse Core Backend running"}
+    return {"status": "ok", "message": "Nexyn Core Backend running"}
 
 @app.get("/health")
 def health_check():
@@ -177,7 +177,7 @@ async def execute_recall(
     engine = RetrievalEngine(registry)
     # The RetrievalEngine needs to be updated to accept the keys/IDs, but since we are short on time,
     # and recall uses Cognee, we'll update it directly.
-    # Actually wait, RetrievalEngine is in synapse/retrieval_engine.py.
+    # Actually wait, RetrievalEngine is in nexyn/retrieval_engine.py.
     # Let's pass the keys to it!
     result = await engine.recall(request, x_tenant_id, x_user_id, x_nim_key, x_cognee_key, x_cognee_url)
     return result.model_dump() if hasattr(result, "model_dump") else result.dict()
@@ -204,7 +204,7 @@ async def execute_memify(
     x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
     """Triggers the Hackathon required cognee.cognify() pipeline."""
-    from synapse.cognee_client import cognify
+    from nexyn.cognee_client import cognify
     dataset_name = f"{x_tenant_id}_{x_user_id}_general"
     await cognify(x_cognee_key, x_cognee_url, datasets=[dataset_name])
     return {"status": "ok", "message": "Memify (cognify) pipeline triggered successfully"}

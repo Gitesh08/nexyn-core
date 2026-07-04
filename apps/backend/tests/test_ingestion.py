@@ -1,7 +1,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
-from synapse.router import ingest_queue
-from synapse.ingestion import IngestPayload, normalize, duplicate_cache
+from nexyn.router import ingest_queue
+from nexyn.ingestion import IngestPayload, normalize, duplicate_cache
 from main import app
 
 @pytest.fixture(autouse=True)
@@ -13,7 +13,7 @@ def reset_state():
 @pytest.mark.asyncio
 async def test_ingest_valid():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/synapse/ingest", json={"text": "hello world"})
+        response = await ac.post("/nexyn/ingest", json={"text": "hello world"})
     
     assert response.status_code == 200
     data = response.json()
@@ -24,11 +24,11 @@ async def test_ingest_valid():
 @pytest.mark.asyncio
 async def test_ingest_duplicate():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        res1 = await ac.post("/synapse/ingest", json={"text": "repeat me"})
+        res1 = await ac.post("/nexyn/ingest", json={"text": "repeat me"})
         assert res1.status_code == 200
         assert res1.json()["status"] == "queued"
         
-        res2 = await ac.post("/synapse/ingest", json={"text": "repeat me"})
+        res2 = await ac.post("/nexyn/ingest", json={"text": "repeat me"})
         assert res2.status_code == 200
         assert res2.json()["status"] == "duplicate"
     
@@ -38,5 +38,5 @@ async def test_ingest_duplicate():
 @pytest.mark.asyncio
 async def test_ingest_empty():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        response = await ac.post("/synapse/ingest", json={"text": ""})
+        response = await ac.post("/nexyn/ingest", json={"text": ""})
     assert response.status_code == 422

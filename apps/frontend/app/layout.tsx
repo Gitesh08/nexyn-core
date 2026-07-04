@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Synapse | The AI Memory Engine",
-  description: "Scale your AI memory without the noise. Project Synapse brings dynamic context pruning and neural plasticity to your data infrastructure.",
+  title: "Project Nexyn | The AI Memory Engine",
+  description: "Scale your AI memory without the noise. Project Nexyn brings dynamic context pruning and neural plasticity to your data infrastructure.",
 };
 
 export default function RootLayout({

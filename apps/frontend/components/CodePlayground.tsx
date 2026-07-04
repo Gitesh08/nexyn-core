@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "lucide-react";
 
 export function CodePlayground() {
-  const [activeTab, setActiveTab] = useState<"vanilla" | "synapse">("synapse");
+  const [activeTab, setActiveTab] = useState<"vanilla" | "nexyn">("nexyn");
 
   return (
     <div id="playground" className="w-full max-w-4xl mx-auto py-24 px-6 relative z-10 font-sans">
@@ -14,7 +14,7 @@ export function CodePlayground() {
           Integration Sandbox
         </h2>
         <p className="text-[#888888] font-normal">
-          Toggle between Vanilla Cognee and Project Synapse syntax.
+          Toggle between Vanilla Cognee and Project Nexyn syntax.
         </p>
       </div>
 
@@ -41,15 +41,15 @@ export function CodePlayground() {
               Vanilla Cognee
             </button>
             <button
-              onClick={() => setActiveTab("synapse")}
+              onClick={() => setActiveTab("nexyn")}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${
-                activeTab === "synapse" 
+                activeTab === "nexyn" 
                   ? "bg-white text-black" 
                   : "text-[#888888] hover:text-white"
               }`}
             >
               <Terminal className="w-3.5 h-3.5" />
-              Project Synapse
+              Project Nexyn
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@ export function CodePlayground() {
               </motion.div>
             ) : (
               <motion.div
-                key="synapse"
+                key="nexyn"
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -90,15 +90,15 @@ export function CodePlayground() {
               >
                 <div className="text-[#A1A1AA]">
                   <span className="text-[#888888]">{"// 1. Biological Ingestion (Prunes Garbage)"}</span><br/>
-                  <span className="text-white">import</span> {"{ Synapse }"} <span className="text-white">from</span> <span className="text-[#A1A1AA]">'@veda/synapse'</span>;<br/>
+                  <span className="text-white">import</span> {"{ Nexyn }"} <span className="text-white">from</span> <span className="text-[#A1A1AA]">'@veda/nexyn'</span>;<br/>
                   <br/>
                   <span className="text-white">const</span> data = <span className="text-[#A1A1AA]">"User accidentally pasted a 500-page terms of service here."</span>;<br/>
                   <br/>
                   <span className="text-[#888888]">{"// Buddhi immediately calculates the valency score."}</span><br/>
-                  <span className="text-white">const</span> score = <span className="text-white">await</span> Synapse.evaluate(data); <span className="text-[#888888]">{"// Score: 1.2 (Trivial)"}</span><br/>
+                  <span className="text-white">const</span> score = <span className="text-white">await</span> Nexyn.evaluate(data); <span className="text-[#888888]">{"// Score: 1.2 (Trivial)"}</span><br/>
                   <br/>
                   <span className="text-[#888888]">{"// Route dynamically based on score."}</span><br/>
-                  <span className="text-white">await</span> Synapse.route(data, score);<br/>
+                  <span className="text-white">await</span> Nexyn.route(data, score);<br/>
                   <br/>
                   <span className="text-[#888888]">{"// Result: Placed in the Sensory Buffer."}</span><br/>
                   <span className="text-[#888888]">{"// Evicts automatically at midnight."}</span><br/>

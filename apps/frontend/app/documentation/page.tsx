@@ -137,14 +137,14 @@ export default function DocumentationPage() {
                 Overview
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-8 leading-[1.1]">
-                Welcome to Synapse
+                Welcome to Nexyn
               </h1>
               <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-[#A1A1AA] prose-headings:text-white prose-a:text-[#3b82f6]">
                 <p>
                   Most artificial intelligence memory systems suffer from a major problem. They remember everything forever. Over time, their memory databases become bloated with useless information. This causes slow retrieval times, high computing costs, and poor context quality. 
                 </p>
                 <p>
-                  Project Synapse fixes this problem by mimicking the human brain. We built an intelligent engine that actively learns how to forget. By filtering and naturally decaying low value data, your knowledge graph remains incredibly fast and highly optimized at all times.
+                  Project Nexyn fixes this problem by mimicking the human brain. We built an intelligent engine that actively learns how to forget. By filtering and naturally decaying low value data, your knowledge graph remains incredibly fast and highly optimized at all times.
                 </p>
               </div>
             </section>
@@ -156,7 +156,7 @@ export default function DocumentationPage() {
               </h2>
               <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-[#A1A1AA]">
                 <p>
-                  At the core of Project Synapse lies Cognee. Cognee is a state of the art graph vector database designed for permanent memory retention. However, raw memory without curation eventually turns into noise. We utilized Cognee as the bedrock storage layer, treating it as the long term permanent memory bank. 
+                  At the core of Project Nexyn lies Cognee. Cognee is a state of the art graph vector database designed for permanent memory retention. However, raw memory without curation eventually turns into noise. We utilized Cognee as the bedrock storage layer, treating it as the long term permanent memory bank. 
                 </p>
                 
                 {/* Visual Pipeline */}
@@ -176,7 +176,7 @@ export default function DocumentationPage() {
                     <div className="w-16 h-16 rounded-full bg-[#3b82f6]/10 border border-[#3b82f6]/30 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                       <BrainCircuit className="w-6 h-6 text-[#3b82f6]" />
                     </div>
-                    <span className="text-sm font-medium text-[#3b82f6]">Synapse Filter</span>
+                    <span className="text-sm font-medium text-[#3b82f6]">Nexyn Filter</span>
                   </div>
 
                   <div className="hidden md:flex flex-col items-center">
@@ -192,7 +192,7 @@ export default function DocumentationPage() {
                 </div>
 
                 <p>
-                  Instead of blindly injecting every incoming message into Cognee, Synapse acts as an intelligent shield. It intercepts the data, evaluates it, and only forwards the most critical knowledge to the Cognee cloud using strict application programming interfaces. 
+                  Instead of blindly injecting every incoming message into Cognee, Nexyn acts as an intelligent shield. It intercepts the data, evaluates it, and only forwards the most critical knowledge to the Cognee cloud using strict application programming interfaces. 
                 </p>
               </div>
             </section>
@@ -204,7 +204,7 @@ export default function DocumentationPage() {
               </h2>
               <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-[#A1A1AA]">
                 <p className="mb-12">
-                  We designed Synapse using four distinct cognitive layers based on human psychology and ancient philosophy. Each layer performs a specialized function in the memory lifecycle.
+                  We designed Nexyn using four distinct cognitive layers based on human psychology and ancient philosophy. Each layer performs a specialized function in the memory lifecycle.
                 </p>
 
                 <div className="flex flex-col gap-12">
@@ -352,7 +352,7 @@ export default function DocumentationPage() {
               </h2>
               <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-[#A1A1AA]">
                 <p>
-                  The deep intelligence behind the Evaluator layer is powered directly by Nvidia microservices. By utilizing the highly optimized language models hosted natively on Nvidia architecture, Synapse achieves lightning fast inference speeds capable of handling massive data throughput. 
+                  The deep intelligence behind the Evaluator layer is powered directly by Nvidia microservices. By utilizing the highly optimized language models hosted natively on Nvidia architecture, Nexyn achieves lightning fast inference speeds capable of handling massive data throughput. 
                 </p>
                 <div className="bg-[#111111] border-l-4 border-[#76b900] p-6 rounded-r-xl my-10 shadow-lg">
                   <h4 className="text-[#76b900] font-bold text-lg mb-3 flex items-center gap-2">
@@ -383,7 +383,7 @@ export default function DocumentationPage() {
                     </p>
                     <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-5 font-mono text-sm">
                       <span className="text-[#555555] select-none mr-4">$</span>
-                      <span className="text-white">pip install synapse core</span>
+                      <span className="text-white">pip install nexyn core</span>
                     </div>
                   </div>
 

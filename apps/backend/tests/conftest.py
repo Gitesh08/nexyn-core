@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 import os
-from synapse.registry import WeightRegistry
+from nexyn.registry import WeightRegistry
 from tests.fixtures import seed_sample_memories
 
 @pytest.fixture

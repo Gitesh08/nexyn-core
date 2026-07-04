@@ -3,13 +3,13 @@ import json
 import logging
 import httpx
 from datetime import datetime, timezone
-from synapse.models import NormalizedPayload, MemoryTrace
-from synapse.kinetics import get_kinetic_params
-from synapse.registry import WeightRegistry
-from synapse import cognee_client
-from synapse.valence import determine_valence
-from synapse.resonance import check_resonance
-from synapse.config import settings
+from nexyn.models import NormalizedPayload, MemoryTrace
+from nexyn.kinetics import get_kinetic_params
+from nexyn.registry import WeightRegistry
+from nexyn import cognee_client
+from nexyn.valence import determine_valence
+from nexyn.resonance import check_resonance
+from nexyn.config import settings
 
 logger = logging.getLogger(__name__)
 

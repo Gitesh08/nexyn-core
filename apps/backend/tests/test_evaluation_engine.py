@@ -1,13 +1,13 @@
 import pytest
 from unittest.mock import AsyncMock
 from datetime import datetime, timezone
-from synapse.evaluation_engine import EvaluationEngine
-from synapse.models import NormalizedPayload
-from synapse.valence import ValenceResult
+from nexyn.evaluation_engine import EvaluationEngine
+from nexyn.models import NormalizedPayload
+from nexyn.valence import ValenceResult
 
 @pytest.mark.asyncio
 async def test_evaluate_score_1_dropped(seeded_registry, mocker):
-    mocker.patch("synapse.evaluation_engine.determine_valence", return_value=ValenceResult(score=1, reasoning="junk"))
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=1, reasoning="junk"))
     engine = EvaluationEngine(seeded_registry)
     payload = NormalizedPayload(text="ok", timestamp=123.0, content_hash="abc")
     
@@ -17,9 +17,9 @@ async def test_evaluate_score_1_dropped(seeded_registry, mocker):
 
 @pytest.mark.asyncio
 async def test_evaluate_resonance_hit(seeded_registry, mocker):
-    mocker.patch("synapse.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
     # Return a mocked resonance hit
-    mocker.patch("synapse.evaluation_engine.check_resonance", return_value={"raw": {"id": "existing-node"}})
+    mocker.patch("nexyn.evaluation_engine.check_resonance", return_value={"raw": {"id": "existing-node"}})
     mock_touch = mocker.patch.object(seeded_registry, "touch_last_accessed", new_callable=AsyncMock)
     
     engine = EvaluationEngine(seeded_registry)
@@ -30,15 +30,15 @@ async def test_evaluate_resonance_hit(seeded_registry, mocker):
 
 @pytest.mark.asyncio
 async def test_evaluate_new_memory(seeded_registry, mocker):
-    mocker.patch("synapse.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
-    mocker.patch("synapse.evaluation_engine.check_resonance", return_value=None)
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
+    mocker.patch("nexyn.evaluation_engine.check_resonance", return_value=None)
     
     # Mock cognee_client.remember
     class MockRememberResult:
         def __init__(self):
             self.items = [{"id": "cognee-uuid"}]
     
-    mocker.patch("synapse.cognee_client.remember", return_value=MockRememberResult())
+    mocker.patch("nexyn.cognee_client.remember", return_value=MockRememberResult())
     
     engine = EvaluationEngine(seeded_registry)
     payload = NormalizedPayload(text="new fact", timestamp=123.0, content_hash="abc")

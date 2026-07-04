@@ -260,16 +260,16 @@ export function SystemSimulation() {
           </div>
         </div>
 
-        {/* ROW 2: Project Synapse Wrapper (Placeholders) */}
+        {/* ROW 2: Project Nexyn Wrapper (Placeholders) */}
         <div className="flex flex-col mt-8">
           <h3 className="text-sm font-semibold text-[#E2B875] tracking-widest uppercase mb-4 pl-2 border-l-2 border-[#E2B875]">
-            Row 2: Project Synapse Integration
+            Row 2: Project Nexyn Integration
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[300px]">
             {/* Box 1 */}
             <div className="border-2 border-dashed border-[#384A6E]/50 rounded-xl bg-[#384A6E]/5 flex items-center justify-center p-6 text-center">
               <span className="text-[#94A3B8] text-sm tracking-widest font-mono">
-                SYNAPSE LAYER ACTIVE WRAPPER INTEGRATION
+                NEXYN LAYER ACTIVE WRAPPER INTEGRATION
                 <br /><br />
                 <span className="text-[#384A6E] font-semibold opacity-70">PENDING DISCOVERY PHASE</span>
               </span>
@@ -278,7 +278,7 @@ export function SystemSimulation() {
             {/* Box 2 */}
             <div className="border-2 border-dashed border-[#384A6E]/50 rounded-xl bg-[#384A6E]/5 flex items-center justify-center p-6 text-center">
               <span className="text-[#94A3B8] text-sm tracking-widest font-mono">
-                SYNAPSE LAYER ACTIVE WRAPPER INTEGRATION
+                NEXYN LAYER ACTIVE WRAPPER INTEGRATION
                 <br /><br />
                 <span className="text-[#384A6E] font-semibold opacity-70">PENDING DISCOVERY PHASE</span>
               </span>

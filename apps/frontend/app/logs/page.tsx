@@ -5,6 +5,8 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers } from "lucide-react";
 
 export default function LogsPage() {
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
@@ -24,7 +26,7 @@ export default function LogsPage() {
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/memories");
+      const res = await fetch(`${API_BASE}/api/memories`);
       const data = await res.json();
       setLogs(data);
       setNow(Date.now());
@@ -42,7 +44,7 @@ export default function LogsPage() {
 
   const handleClearData = async () => {
     try {
-      await fetch("http://localhost:8000/api/memories", { method: "DELETE" });
+      await fetch(`${API_BASE}/api/memories`, { method: "DELETE" });
       await fetchLogs();
     } catch (e) {
       console.error("Failed to clear data", e);
@@ -55,7 +57,7 @@ export default function LogsPage() {
     
     setSearching(true);
     try {
-      const res = await fetch("http://localhost:8000/api/recall", {
+      const res = await fetch(`${API_BASE}/api/recall`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, top_k: 3 })
@@ -77,7 +79,7 @@ export default function LogsPage() {
     
     setIngesting(true);
     try {
-      const res = await fetch("http://localhost:8000/nexyn/ingest", {
+      const res = await fetch(`${API_BASE}/nexyn/ingest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: ingestText })

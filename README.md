@@ -44,7 +44,7 @@ You can bypass the server and use Nexyn's core logic directly in your own script
 
 ```python
 import asyncio
-from nexyn import NormalizedPayload, WeightRegistry, QueueRegistry
+from nexyn import NormalizedPayload, WeightRegistry
 from nexyn.evaluation_engine import EvaluationEngine
 
 async def main():
@@ -53,24 +53,31 @@ async def main():
     
     engine = EvaluationEngine(registry)
     
-    # 1. Create a normalized payload
+    # 1. Create a normalized payload with API Keys
+    # Nexyn uses a Bring-Your-Own-Key (BYOK) architecture. 
+    # Keys can be passed dynamically per-user for stateless multi-tenancy!
     payload = NormalizedPayload(
         text="The user mentioned they are allergic to peanuts.",
         timestamp=1700000000.0,
         content_hash="unique_hash_123",
         tenant_id="app_production",
         user_id="user_992",
-        nim_key="your_nvidia_nim_key",
-        cognee_key="your_cognee_key"
+        nim_key="your_nvidia_nim_key",    # Used for Valence Scoring (Llama 3)
+        cognee_key="your_cognee_api_key", # Used for permanent graph consolidation
+        cognee_url="https://api.cognee.ai"
     )
     
     # 2. Evaluate and score the memory (Layer 2)
-    # The LLM determines this is highly important and assigns it a slow decay rate.
+    # The NVIDIA NIM LLM determines this is highly important and assigns it a slow decay rate.
+    # It is then temporarily stored in the SQLite Registry.
     await engine.evaluate(payload)
     
-    # 3. Retrieve all active memories
+    # 3. (Background) The Memory Consolidator will automatically sweep the registry.
+    # Any memories with a Valence Score of 3 or higher are safely pushed to the Cognee Cloud!
+    
+    # 4. Retrieve all active memories locally
     active_memories = await registry.list_active("app_production", "user_992")
-    print(f"Active memories: {len(active_memories)}")
+    print(f"Active memories in temporary buffer: {len(active_memories)}")
 
 if __name__ == "__main__":
     asyncio.run(main())

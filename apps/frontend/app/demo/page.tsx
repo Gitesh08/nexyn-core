@@ -5,7 +5,7 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);

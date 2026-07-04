@@ -44,7 +44,8 @@ export default function LogsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const getHeaders = () => {
+  const getHeaders = (): Record<string, string> => {
+    if (typeof window === "undefined") return {};
     return {
       "Content-Type": "application/json",
       "x-tenant-id": localStorage.getItem("nexyn_tenant_id") || "hackathon_demo",
@@ -119,8 +120,11 @@ export default function LogsPage() {
       setNow(Date.now());
 
       // Removed smart polling auto-stop to guarantee perfect sync during the demo
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e.message !== "Failed to fetch logs" && !e?.message?.includes("Failed to fetch")) {
+        console.error("fetchLogs error:", e);
+      }
+      setBackendError(true);
     } finally {
       setLoading(false);
     }
@@ -263,7 +267,10 @@ export default function LogsPage() {
         }
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          console.error("SSE fetch error:", err);
+          if (!err?.message?.includes("Failed to fetch")) {
+            console.error("SSE fetch error:", err);
+          }
+          setBackendError(true);
         }
       }
     };

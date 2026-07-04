@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { RotateCcw, Search, Database, Layers, ShieldAlert, Terminal } from "lucide-react";
+import { notFound } from "next/navigation";
 
 export default function LogsPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
   const [logs, setLogs] = useState([]);
@@ -26,7 +31,7 @@ export default function LogsPage() {
   // Smart Polling State
   const [isPolling, setIsPolling] = useState(false);
 
-  const getHeaders = () => {
+  const getHeaders = (): Record<string, string> => {
     if (typeof window === "undefined") return {};
     return {
       "Content-Type": "application/json",

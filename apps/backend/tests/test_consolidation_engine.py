@@ -1,18 +1,18 @@
 import pytest
 from unittest.mock import AsyncMock
-from synapse.consolidation_engine import ConsolidationEngine
-from synapse.config import settings
+from nexyn.consolidation_engine import ConsolidationEngine
+from nexyn.config import settings
 from tests.fixtures import seed_sample_memories
 
 @pytest.mark.asyncio
 async def test_consolidation_sweep(seeded_registry, mocker):
-    mocker.patch("synapse.cognee_client.forget", new_callable=AsyncMock)
+    mocker.patch("nexyn.cognee_client.forget", new_callable=AsyncMock)
     engine = ConsolidationEngine(seeded_registry)
     
     settings.prune_floor = 0.0
     await engine.sweep_once()
     
-    from synapse import cognee_client
+    from nexyn import cognee_client
     assert cognee_client.forget.called
     
     active = await seeded_registry.list_active()
@@ -21,7 +21,7 @@ async def test_consolidation_sweep(seeded_registry, mocker):
 @pytest.mark.asyncio
 async def test_sweep_failure_marks_pending(seeded_registry, mocker):
     mock_forget = AsyncMock(side_effect=Exception("API down"))
-    mocker.patch("synapse.cognee_client.forget", new=mock_forget)
+    mocker.patch("nexyn.cognee_client.forget", new=mock_forget)
     
     engine = ConsolidationEngine(seeded_registry)
     
@@ -43,7 +43,7 @@ async def test_sweep_failure_marks_pending(seeded_registry, mocker):
 async def test_dry_run_mode(seeded_registry, mocker):
     settings.consolidation_dry_run = True
     mock_forget = AsyncMock()
-    mocker.patch("synapse.cognee_client.forget", new=mock_forget)
+    mocker.patch("nexyn.cognee_client.forget", new=mock_forget)
     
     engine = ConsolidationEngine(seeded_registry)
     await engine.sweep_once()

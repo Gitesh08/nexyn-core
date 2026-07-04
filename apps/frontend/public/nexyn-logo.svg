@@ -25,5 +25,5 @@
   <circle cx="90" cy="75" r="18" fill="url(#coreGrad)" />
   <circle cx="90" cy="75" r="6" fill="#ffffff" opacity="0.95" />
 
-  <text x="135" y="91" font-family="'Geist', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="48" font-weight="700" fill="#ffffff" letter-spacing="-1.5">SYNAPSE</text>
+  <text x="135" y="91" font-family="'Geist', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="48" font-weight="700" fill="#ffffff" letter-spacing="-1.5">NEXYN</text>
 </svg>

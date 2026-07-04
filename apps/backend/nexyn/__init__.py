@@ -1,4 +1,4 @@
-"""Synapse backend package."""
+"""Nexyn backend package."""
 
 from .models import (
     IngestPayload,

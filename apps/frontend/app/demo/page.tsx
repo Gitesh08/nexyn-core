@@ -44,11 +44,11 @@ export default function LogsPage() {
   const getHeaders = () => {
     return {
       "Content-Type": "application/json",
-      "x-tenant-id": localStorage.getItem("synapse_tenant_id") || "hackathon_demo",
-      "x-user-id": localStorage.getItem("synapse_user_id") || "anonymous",
-      "x-nim-key": localStorage.getItem("synapse_nim_key") || "",
-      "x-cognee-key": localStorage.getItem("synapse_cognee_key") || "",
-      "x-cognee-url": localStorage.getItem("synapse_cognee_url") || ""
+      "x-tenant-id": localStorage.getItem("nexyn_tenant_id") || "hackathon_demo",
+      "x-user-id": localStorage.getItem("nexyn_user_id") || "anonymous",
+      "x-nim-key": localStorage.getItem("nexyn_nim_key") || "",
+      "x-cognee-key": localStorage.getItem("nexyn_cognee_key") || "",
+      "x-cognee-url": localStorage.getItem("nexyn_cognee_url") || ""
     };
   };
 
@@ -56,11 +56,11 @@ export default function LogsPage() {
     setSaving(true);
     setBackendError(false);
     try {
-      localStorage.setItem("synapse_nim_key", nimKey);
-      localStorage.setItem("synapse_cognee_key", cogneeKey);
-      localStorage.setItem("synapse_cognee_url", cogneeUrl);
-      localStorage.setItem("synapse_tenant_id", tenantId);
-      localStorage.setItem("synapse_user_id", userId);
+      localStorage.setItem("nexyn_nim_key", nimKey);
+      localStorage.setItem("nexyn_cognee_key", cogneeKey);
+      localStorage.setItem("nexyn_cognee_url", cogneeUrl);
+      localStorage.setItem("nexyn_tenant_id", tenantId);
+      localStorage.setItem("nexyn_user_id", userId);
       
       setSaved(true);
       setIsConfigured(true);
@@ -78,15 +78,15 @@ export default function LogsPage() {
   };
 
   const checkConfig = async () => {
-    const storedNim = localStorage.getItem("synapse_nim_key");
-    const storedCognee = localStorage.getItem("synapse_cognee_key");
-    const storedCogneeUrl = localStorage.getItem("synapse_cognee_url");
-    const storedTenant = localStorage.getItem("synapse_tenant_id") || "hackathon_demo";
-    let storedUser = localStorage.getItem("synapse_user_id");
+    const storedNim = localStorage.getItem("nexyn_nim_key");
+    const storedCognee = localStorage.getItem("nexyn_cognee_key");
+    const storedCogneeUrl = localStorage.getItem("nexyn_cognee_url");
+    const storedTenant = localStorage.getItem("nexyn_tenant_id") || "hackathon_demo";
+    let storedUser = localStorage.getItem("nexyn_user_id");
     
     if (!storedUser) {
       storedUser = Math.random().toString(36).substring(2, 10);
-      localStorage.setItem("synapse_user_id", storedUser);
+      localStorage.setItem("nexyn_user_id", storedUser);
     }
 
     setNimKey(storedNim || "");
@@ -185,7 +185,7 @@ export default function LogsPage() {
     
     setIngesting(true);
     try {
-      const res = await fetch(`${API_BASE}/synapse/ingest`, {
+      const res = await fetch(`${API_BASE}/nexyn/ingest`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({ text: ingestText })
@@ -213,8 +213,8 @@ export default function LogsPage() {
     if (!isConfigured) return;
     
     // Construct headers for SSE (EventSource doesn't support custom headers easily, so we use query params)
-    const tenantId = localStorage.getItem("synapse_tenant_id") || "hackathon_demo";
-    const userId = localStorage.getItem("synapse_user_id") || "anonymous";
+    const tenantId = localStorage.getItem("nexyn_tenant_id") || "hackathon_demo";
+    const userId = localStorage.getItem("nexyn_user_id") || "anonymous";
     
     // Since native EventSource doesn't support headers, we must send the keys in a way the backend can read them.
     // Wait, the backend expects `x-tenant-id` and `x-user-id` as HEADERS!
@@ -282,10 +282,10 @@ export default function LogsPage() {
         {/* HEADER */}
         <div className="flex justify-between items-end mb-12 border-b border-[#333333] pb-6">
           <div className="flex items-center gap-4">
-            <Image src="/synapse-logo.svg" alt="Synapse" width={48} height={48} />
+            <Image src="/nexyn-logo.svg" alt="Nexyn" width={48} height={48} />
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-white mb-2 flex items-center gap-4">
-                Synapse Internals
+                Nexyn Internals
                 <button 
                   onClick={() => setSettingsOpen(true)}
                   className="p-2 bg-[#1A1A1A] hover:bg-[#333333] border border-[#333333] rounded-md transition-colors text-[#A1A1AA] hover:text-white"

@@ -16,7 +16,7 @@ export function TerminalBlock() {
       </div>
       <div className="p-6 text-sm font-mono text-[#94A3B8] flex items-center justify-start gap-4 overflow-x-auto">
         <span className="text-[#384A6E] select-none">~</span>
-        <span className="text-[#F8FAFC]">npm install @veda/synapse</span>
+        <span className="text-[#F8FAFC]">npm install @veda/nexyn</span>
       </div>
     </div>
   );

@@ -77,7 +77,7 @@ export default function LogsPage() {
     
     setIngesting(true);
     try {
-      const res = await fetch("http://localhost:8000/synapse/ingest", {
+      const res = await fetch("http://localhost:8000/nexyn/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: ingestText })
@@ -127,10 +127,10 @@ export default function LogsPage() {
         {/* HEADER */}
         <div className="flex justify-between items-end mb-12 border-b border-[#333333] pb-6">
           <div className="flex items-center gap-4">
-            <Image src="/synapse-logo.svg" alt="Synapse" width={48} height={48} />
+            <Image src="/nexyn-logo.svg" alt="Nexyn" width={48} height={48} />
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
-                Synapse Internals
+                Nexyn Internals
               </h1>
               <p className="text-[#888888] text-sm">Real-time view of the 4-layer biomimetic pipeline.</p>
             </div>

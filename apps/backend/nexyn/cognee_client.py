@@ -45,7 +45,7 @@ async def _safe_cognee_execute(api_key: str, custom_url: str, func, *args, **kwa
     Acquires a lock, configures Cognee for the specific user's API key (or falls back to env vars),
     executes the function, and releases the lock safely.
     """
-    from synapse.config import settings
+    from nexyn.config import settings
     import os
     fallback_url = os.getenv("COGNEE_URL", "")
     fallback_key = os.getenv("COGNEE_API_KEY", "")

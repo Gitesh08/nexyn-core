@@ -37,28 +37,28 @@ export function HeroSimulation() {
 
   // Animated Metrics Display
   const [vanillaTokens, setVanillaTokens] = useState(0);
-  const [synapseTokens, setSynapseTokens] = useState(0);
+  const [nexynTokens, setNexynTokens] = useState(0);
   const [vanillaLatency, setVanillaLatency] = useState(0);
-  const [synapseLatency, setSynapseLatency] = useState(0);
+  const [nexynLatency, setNexynLatency] = useState(0);
 
   useEffect(() => {
     const targetVanillaTokens = [0, 450, 8500, 16400, 16400];
-    const targetSynapseTokens = [0, 450, valenceScore > 1.5 ? 450 : 120, 450, valenceScore > 1.5 ? 250 : 50];
+    const targetNexynTokens = [0, 450, valenceScore > 1.5 ? 450 : 120, 450, valenceScore > 1.5 ? 250 : 50];
     
     const targetVanillaLat = [0, 12, 120, 850, 850];
-    const targetSynapseLat = [0, 15, valenceScore > 1.5 ? 65 : 15, 45, 25];
+    const targetNexynLat = [0, 15, valenceScore > 1.5 ? 65 : 15, 45, 25];
 
     const controls1 = animate(vanillaTokens, targetVanillaTokens[timelinePhase], {
       duration: 0.8, ease: "easeOut", onUpdate: (v) => setVanillaTokens(Math.round(v))
     });
-    const controls2 = animate(synapseTokens, targetSynapseTokens[timelinePhase], {
-      duration: 0.8, ease: "easeOut", onUpdate: (v) => setSynapseTokens(Math.round(v))
+    const controls2 = animate(nexynTokens, targetNexynTokens[timelinePhase], {
+      duration: 0.8, ease: "easeOut", onUpdate: (v) => setNexynTokens(Math.round(v))
     });
     const controls3 = animate(vanillaLatency, targetVanillaLat[timelinePhase], {
       duration: 0.8, ease: "easeOut", onUpdate: (v) => setVanillaLatency(Math.round(v))
     });
-    const controls4 = animate(synapseLatency, targetSynapseLat[timelinePhase], {
-      duration: 0.8, ease: "easeOut", onUpdate: (v) => setSynapseLatency(Math.round(v))
+    const controls4 = animate(nexynLatency, targetNexynLat[timelinePhase], {
+      duration: 0.8, ease: "easeOut", onUpdate: (v) => setNexynLatency(Math.round(v))
     });
 
     return () => {
@@ -74,13 +74,13 @@ export function HeroSimulation() {
   const [hoarderRawBlocks, setHoarderRawBlocks] = useState<{id: number, x: number, y: number}[]>([]);
   const [hoarderNodes, setHoarderNodes] = useState<{id: number, x: number, y: number, connectedTo: number[]}[]>([]);
   
-  const [synapseIncoming, setSynapseIncoming] = useState<{id: number, x: number, y: number, score: number} | null>(null);
-  const [synapseRawBlocks, setSynapseRawBlocks] = useState<{id: number, x: number, y: number, score: number}[]>([]);
-  const [synapseNodes, setSynapseNodes] = useState<{id: number, x: number, y: number, score: number, connectedTo: number[]}[]>([]);
-  const [synapseDiamonds, setSynapseDiamonds] = useState<{id: number, x: number, y: number}[]>([]);
+  const [nexynIncoming, setNexynIncoming] = useState<{id: number, x: number, y: number, score: number} | null>(null);
+  const [nexynRawBlocks, setNexynRawBlocks] = useState<{id: number, x: number, y: number, score: number}[]>([]);
+  const [nexynNodes, setNexynNodes] = useState<{id: number, x: number, y: number, score: number, connectedTo: number[]}[]>([]);
+  const [nexynDiamonds, setNexynDiamonds] = useState<{id: number, x: number, y: number}[]>([]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("pip install synapse-core");
+    navigator.clipboard.writeText("pip install nexyn-core");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -100,9 +100,9 @@ export function HeroSimulation() {
     if (isExecuting) return;
     setHoarderRawBlocks([]);
     setHoarderNodes([]);
-    setSynapseRawBlocks([]);
-    setSynapseNodes([]);
-    setSynapseDiamonds([]);
+    setNexynRawBlocks([]);
+    setNexynNodes([]);
+    setNexynDiamonds([]);
     setLeftLogs([]);
     setRightLogs([]);
     setTimelinePhase(0);
@@ -122,9 +122,9 @@ export function HeroSimulation() {
     // Reset Graph State if we are starting a new run and were finished
     setHoarderRawBlocks([]);
     setHoarderNodes([]);
-    setSynapseRawBlocks([]);
-    setSynapseNodes([]);
-    setSynapseDiamonds([]);
+    setNexynRawBlocks([]);
+    setNexynNodes([]);
+    setNexynDiamonds([]);
     setLeftLogs([]);
     setRightLogs([]);
     setTimelinePhase(0);
@@ -143,11 +143,11 @@ export function HeroSimulation() {
         </SyntaxLine>
       ]);
       
-      setSynapseIncoming({ id: Date.now(), x: 200, y: 80, score });
+      setNexynIncoming({ id: Date.now(), x: 200, y: 80, score });
       setRightLogs(l => [...l, 
         <SyntaxLine key={Date.now()}>
           {getLogPrefix()}
-          <span><span className={CodeStyles.variable}>score</span> = <span className="text-white font-mono font-bold">Synapse.eval</span>(<span className={CodeStyles.variable}>data</span>) <span className={CodeStyles.comment}>// Score: {score.toFixed(1)}</span></span>
+          <span><span className={CodeStyles.variable}>score</span> = <span className="text-white font-mono font-bold">Nexyn.eval</span>(<span className={CodeStyles.variable}>data</span>) <span className={CodeStyles.comment}>// Score: {score.toFixed(1)}</span></span>
         </SyntaxLine>
       ]);
     }, 500);
@@ -176,7 +176,7 @@ export function HeroSimulation() {
       setHoarderRawBlocks([]);
       setHoarderNodes(newHoarderNodes);
       
-      // Synapse SELECTIVE Memify
+      // Nexyn SELECTIVE Memify
       if (score < 2.0) {
         setRightLogs(l => [...l, 
           <SyntaxLine key={Date.now() + 1}>
@@ -184,8 +184,8 @@ export function HeroSimulation() {
             <span><span className={CodeStyles.comment}>// Chitta Layer: Trivial data. Skipping consolidation.</span></span>
           </SyntaxLine>
         ]);
-        setSynapseIncoming(null);
-        setSynapseRawBlocks([{ id: Date.now(), x: 200, y: 150, score }]);
+        setNexynIncoming(null);
+        setNexynRawBlocks([{ id: Date.now(), x: 200, y: 150, score }]);
       } else {
         setRightLogs(l => [...l, 
           <SyntaxLine key={Date.now() + 1}>
@@ -193,16 +193,16 @@ export function HeroSimulation() {
             <span><span className={CodeStyles.keyword}>await</span> <span className="text-white font-mono font-bold">cognee.remember</span>() <span className={CodeStyles.comment}>// Selective memory</span></span>
           </SyntaxLine>
         ]);
-        setSynapseIncoming(null);
-        const newSynapseNodes: typeof synapseNodes = [];
+        setNexynIncoming(null);
+        const newNexynNodes: typeof nexynNodes = [];
         for (let i = 0; i < 3; i++) {
-          newSynapseNodes.push({
+          newNexynNodes.push({
             id: Date.now() + Math.random(),
             x: 200 + Math.cos((i * Math.PI * 2) / 3) * 40, y: 150 + Math.sin((i * Math.PI * 2) / 3) * 40,
-            score: score, connectedTo: i > 0 ? [newSynapseNodes[i-1].id] : []
+            score: score, connectedTo: i > 0 ? [newNexynNodes[i-1].id] : []
           });
         }
-        setSynapseNodes(newSynapseNodes);
+        setNexynNodes(newNexynNodes);
       }
     }, 2500);
 
@@ -249,7 +249,7 @@ export function HeroSimulation() {
             <span><span className={CodeStyles.keyword}>await</span> <span className="text-white font-mono font-bold">cognee.forget</span>() <span className={CodeStyles.comment}>// Data is dropped</span></span>
           </SyntaxLine>
         ]);
-        setSynapseRawBlocks([]); // Dissolves to dust
+        setNexynRawBlocks([]); // Dissolves to dust
       } else if (score > 4.0) {
         setRightLogs(l => [...l, 
           <SyntaxLine key={Date.now()}>
@@ -257,8 +257,8 @@ export function HeroSimulation() {
             <span><span className={CodeStyles.keyword}>await</span> <span className="text-white font-mono font-bold">cognee.improve</span>() <span className={CodeStyles.comment}>// Data is permanently consolidated</span></span>
           </SyntaxLine>
         ]);
-        setSynapseNodes([]);
-        setSynapseDiamonds([{ id: Date.now(), x: 200, y: 150 }]);
+        setNexynNodes([]);
+        setNexynDiamonds([{ id: Date.now(), x: 200, y: 150 }]);
       } else {
         setRightLogs(l => [...l, 
           <SyntaxLine key={Date.now()}>
@@ -302,7 +302,7 @@ export function HeroSimulation() {
           transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="text-sm md:text-base lg:text-lg text-[#888888] mb-10 max-w-3xl mx-auto font-normal leading-relaxed"
         >
-          Watch vector graphs bloat. Watch Synapse self-prune.
+          Watch vector graphs bloat. Watch Nexyn self-prune.
         </motion.p>
 
         <motion.div 
@@ -326,7 +326,7 @@ export function HeroSimulation() {
           </div>
           <div className="p-4 text-sm font-mono text-[#A1A1AA] flex items-center justify-start gap-4">
             <span className="text-[#333333] select-none">$</span>
-            <span className="text-white">pip install synapse-core</span>
+            <span className="text-white">pip install nexyn-core</span>
           </div>
         </motion.div>
       </div>
@@ -458,11 +458,11 @@ export function HeroSimulation() {
                   </div>
                 </div>
 
-                {/* RIGHT: PROJECT SYNAPSE */}
+                {/* RIGHT: PROJECT NEXYN */}
                 <div className="flex flex-col bg-[#0A0A0A] rounded-md border border-[#333333] overflow-hidden h-full">
                   <div className="px-6 py-4 border-b border-[#333333] z-20 bg-black flex justify-between items-center">
                     <h3 className="text-white font-medium text-sm flex items-center gap-2">
-                      Project Synapse <span className="text-[#888888] font-normal hidden sm:inline">(4-Layer Architecture)</span>
+                      Project Nexyn <span className="text-[#888888] font-normal hidden sm:inline">(4-Layer Architecture)</span>
                     </h3>
                   </div>
 
@@ -478,35 +478,35 @@ export function HeroSimulation() {
                     <svg viewBox={viewBox} className="absolute inset-0 w-full h-full">
                       {/* INGEST & EVALUATE */}
                       <AnimatePresence>
-                        {phase === "ingest" && synapseIncoming && (
+                        {phase === "ingest" && nexynIncoming && (
                           <g>
                             <motion.rect
                               initial={{ y: 0, opacity: 0 }}
-                              animate={{ y: synapseIncoming.y, opacity: 1 }}
+                              animate={{ y: nexynIncoming.y, opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              x={synapseIncoming.x - 20} y={synapseIncoming.y - 15}
+                              x={nexynIncoming.x - 20} y={nexynIncoming.y - 15}
                               width={40} height={30} 
-                              fill={synapseIncoming.score > 2.0 ? "#eab308" : "#555555"} 
+                              fill={nexynIncoming.score > 2.0 ? "#eab308" : "#555555"} 
                               rx={4} 
                             />
                             {/* Scanning Laser (Buddhi SLM) */}
                             <motion.line
-                              initial={{ y1: synapseIncoming.y - 20, y2: synapseIncoming.y - 20 }}
-                              animate={{ y1: synapseIncoming.y + 20, y2: synapseIncoming.y + 20 }}
+                              initial={{ y1: nexynIncoming.y - 20, y2: nexynIncoming.y - 20 }}
+                              animate={{ y1: nexynIncoming.y + 20, y2: nexynIncoming.y + 20 }}
                               transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
-                              x1={synapseIncoming.x - 30} x2={synapseIncoming.x + 30}
+                              x1={nexynIncoming.x - 30} x2={nexynIncoming.x + 30}
                               stroke="#ffffff" strokeWidth={2}
                               style={{ filter: "drop-shadow(0 0 5px #ffffff)" }}
                             />
-                            <text x={synapseIncoming.x + 35} y={synapseIncoming.y + 5} fill="white" fontSize="12" fontFamily="monospace">
-                              Score: {synapseIncoming.score.toFixed(1)}
+                            <text x={nexynIncoming.x + 35} y={nexynIncoming.y + 5} fill="white" fontSize="12" fontFamily="monospace">
+                              Score: {nexynIncoming.score.toFixed(1)}
                             </text>
                           </g>
                         )}
                       </AnimatePresence>
 
                       <AnimatePresence>
-                        {synapseRawBlocks.map(block => (
+                        {nexynRawBlocks.map(block => (
                           <motion.rect
                             key={block.id}
                             initial={{ y: block.y - 50, opacity: 0 }}
@@ -521,10 +521,10 @@ export function HeroSimulation() {
 
                       {/* SELECTIVE MEMIFY & SEARCH */}
                       <AnimatePresence>
-                        {synapseNodes.map(node => (
+                        {nexynNodes.map(node => (
                           <motion.g key={node.id} exit={{ opacity: 0, scale: 0 }}>
                             {node.connectedTo.map(targetId => {
-                              const target = synapseNodes.find(n => n.id === targetId);
+                              const target = nexynNodes.find(n => n.id === targetId);
                               if (target) {
                                 const isSearch = phase === "search";
                                 return (
@@ -547,7 +547,7 @@ export function HeroSimulation() {
 
                       {/* LIFECYCLE: PRUNE / IMPROVE */}
                       <AnimatePresence>
-                        {synapseDiamonds.map(diamond => (
+                        {nexynDiamonds.map(diamond => (
                           <motion.polygon
                             key={diamond.id}
                             initial={{ scale: 0, rotate: -45 }}
@@ -566,16 +566,16 @@ export function HeroSimulation() {
                       <div className="flex flex-col">
                         <span className="text-[10px] text-[#888888] uppercase tracking-widest font-medium mb-1">Token Payload</span>
                         <div className="flex items-baseline gap-2">
-                          <span className={`text-xl font-mono tracking-tight transition-colors ${synapseTokens > 10000 ? "text-red-500 font-bold" : "text-white"}`}>
-                            {synapseTokens.toLocaleString()}
+                          <span className={`text-xl font-mono tracking-tight transition-colors ${nexynTokens > 10000 ? "text-red-500 font-bold" : "text-white"}`}>
+                            {nexynTokens.toLocaleString()}
                           </span>
                           <span className="text-[10px] font-medium text-[#3b82f6]">OPTIMIZED</span>
                         </div>
                       </div>
                       <div className="flex flex-col text-right">
                         <span className="text-[10px] text-[#888888] uppercase tracking-widest font-medium mb-1">Retrieval Latency</span>
-                        <span className={`text-xl font-mono tracking-tight transition-colors ${synapseLatency > 400 ? "text-red-500 font-bold" : "text-white"}`}>
-                          {synapseLatency}ms
+                        <span className={`text-xl font-mono tracking-tight transition-colors ${nexynLatency > 400 ? "text-red-500 font-bold" : "text-white"}`}>
+                          {nexynLatency}ms
                         </span>
                       </div>
                     </div>

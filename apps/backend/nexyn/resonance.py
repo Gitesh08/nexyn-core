@@ -1,7 +1,7 @@
 import logging
-from synapse import cognee_client
-from synapse.models import NormalizedPayload
-from synapse.config import settings
+from nexyn import cognee_client
+from nexyn.models import NormalizedPayload
+from nexyn.config import settings
 
 logger = logging.getLogger(__name__)
 

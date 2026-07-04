@@ -1,9 +1,9 @@
 import asyncio
 import logging
-from synapse.registry import WeightRegistry, QueueRegistry
-from synapse.evaluation_engine import EvaluationEngine
-from synapse.models import NormalizedPayload
-from synapse.config import settings
+from nexyn.registry import WeightRegistry, QueueRegistry
+from nexyn.evaluation_engine import EvaluationEngine
+from nexyn.models import NormalizedPayload
+from nexyn.config import settings
 
 logger = logging.getLogger(__name__)
 

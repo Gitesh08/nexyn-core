@@ -1,8 +1,8 @@
 import json
 import logging
 import httpx
-from synapse.models import NormalizedPayload, ValenceResult
-from synapse.config import settings
+from nexyn.models import NormalizedPayload, ValenceResult
+from nexyn.config import settings
 
 logger = logging.getLogger(__name__)
 

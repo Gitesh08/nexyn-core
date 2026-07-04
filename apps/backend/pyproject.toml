@@ -3,11 +3,11 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "synapse-core"
+name = "nexyn-core"
 version = "0.1.0"
 description = "A biomimetic memory consolidation layer for LLMs"
 authors = [
-    { name = "Synapse team", email = "gmahadik8080@gmail.com" }
+    { name = "Nexyn team", email = "gmahadik8080@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,7 +32,7 @@ dev = [
 ]
 
 [project.scripts]
-synapse-server = "synapse.main:run_server"
+nexyn-server = "nexyn.main:run_server"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

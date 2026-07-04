@@ -1,13 +1,13 @@
 import pytest
 import asyncio
 from unittest.mock import AsyncMock
-from synapse.retrieval_engine import RetrievalEngine
-from synapse.models import RecallRequest
-from synapse.config import settings
+from nexyn.retrieval_engine import RetrievalEngine
+from nexyn.models import RecallRequest
+from nexyn.config import settings
 
 @pytest.mark.asyncio
 async def test_retrieval_empty_graph(seeded_registry, mocker):
-    mocker.patch("synapse.cognee_client.recall", new_callable=AsyncMock, return_value=[])
+    mocker.patch("nexyn.cognee_client.recall", new_callable=AsyncMock, return_value=[])
     engine = RetrievalEngine(seeded_registry)
     
     req = RecallRequest(query="hello")
@@ -22,7 +22,7 @@ async def test_retrieval_filters_pruned(seeded_registry, mocker):
     await seeded_registry.mark_pruned(node_id_to_prune)
     
     mock_recall = AsyncMock(return_value=[{"id": t.node_id, "score": 0.9} for t in traces])
-    mocker.patch("synapse.cognee_client.recall", new=mock_recall)
+    mocker.patch("nexyn.cognee_client.recall", new=mock_recall)
     
     engine = RetrievalEngine(seeded_registry)
     req = RecallRequest(query="test", top_k=10)
@@ -37,7 +37,7 @@ async def test_retrieval_timeout(seeded_registry, mocker):
         await asyncio.sleep(2.0)
         return []
         
-    mocker.patch("synapse.cognee_client.recall", new=slow_recall)
+    mocker.patch("nexyn.cognee_client.recall", new=slow_recall)
     settings.retrieval_timeout_seconds = 0.1
     
     engine = RetrievalEngine(seeded_registry)
@@ -50,7 +50,7 @@ async def test_retrieval_timeout(seeded_registry, mocker):
 @pytest.mark.asyncio
 async def test_retrieval_cache(seeded_registry, mocker):
     mock_recall = AsyncMock(return_value=[])
-    mocker.patch("synapse.cognee_client.recall", new=mock_recall)
+    mocker.patch("nexyn.cognee_client.recall", new=mock_recall)
     
     engine = RetrievalEngine(seeded_registry)
     req = RecallRequest(query="cache_test")
@@ -64,7 +64,7 @@ async def test_retrieval_cache(seeded_registry, mocker):
 @pytest.mark.asyncio
 async def test_reinforce(seeded_registry, mocker):
     mock_improve = AsyncMock()
-    mocker.patch("synapse.cognee_client.improve", new=mock_improve)
+    mocker.patch("nexyn.cognee_client.improve", new=mock_improve)
     
     traces = await seeded_registry.list_active()
     node_id = traces[0].node_id

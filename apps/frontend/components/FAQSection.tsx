@@ -6,16 +6,16 @@ import { Plus } from "lucide-react";
 
 const faqs = [
   {
-    question: "What exactly is Project Synapse?",
-    answer: "Project Synapse is a biomimetic cognitive wrapper. It sits on top of standard graph-vector databases to add automated evaluation, mathematical decay, and instinctual consolidation—preventing context amnesia."
+    question: "What exactly is Project Nexyn?",
+    answer: "Project Nexyn is a biomimetic cognitive wrapper. It sits on top of standard graph-vector databases to add automated evaluation, mathematical decay, and instinctual consolidation—preventing context amnesia."
   },
   {
     question: "Doesn't Cognee already manage AI memory?",
-    answer: "Cognee is a highly powerful engine for building and querying knowledge graphs. However, naive usage leads to infinite data hoarding. We use Cognee as our core infrastructure, but Synapse adds the \"Sleep Cycle\" (pruning and memifying) so the Cognee graph remains perfectly sparse and optimized over time."
+    answer: "Cognee is a highly powerful engine for building and querying knowledge graphs. However, naive usage leads to infinite data hoarding. We use Cognee as our core infrastructure, but Nexyn adds the \"Sleep Cycle\" (pruning and memifying) so the Cognee graph remains perfectly sparse and optimized over time."
   },
   {
     question: "How difficult is the integration?",
-    answer: "It is a drop-in replacement. Simply route your raw data through `Synapse.evaluate()` before calling your standard `cognee.add()` and `cognee.cognify()` functions. The background pruning cycle handles the rest."
+    answer: "It is a drop-in replacement. Simply route your raw data through `Nexyn.evaluate()` before calling your standard `cognee.add()` and `cognee.cognify()` functions. The background pruning cycle handles the rest."
   },
   {
     question: "Does the Buddhi evaluation layer add high latency?",
@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: "Is this open source?",
-    answer: "Yes. Project Synapse is fully open-source and designed to be run locally alongside your existing LLM architecture."
+    answer: "Yes. Project Nexyn is fully open-source and designed to be run locally alongside your existing LLM architecture."
   }
 ];
 

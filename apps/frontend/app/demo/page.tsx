@@ -5,7 +5,7 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
@@ -13,7 +13,7 @@ export default function LogsPage() {
   const [now, setNow] = useState(Date.now());
   const [isConfigured, setIsConfigured] = useState(true);
   const [backendError, setBackendError] = useState(false);
-  
+
   // Layer 4 state
   const [query, setQuery] = useState("");
   const [recallResults, setRecallResults] = useState<any>(null);
@@ -23,7 +23,7 @@ export default function LogsPage() {
   const [ingestText, setIngestText] = useState("");
   const [ingestResult, setIngestResult] = useState<any>(null);
   const [ingesting, setIngesting] = useState(false);
-  
+
   // Memify state
   const [memifying, setMemifying] = useState(false);
   const [memifySuccess, setMemifySuccess] = useState(false);
@@ -61,7 +61,7 @@ export default function LogsPage() {
       localStorage.setItem("nexyn_cognee_url", cogneeUrl);
       localStorage.setItem("nexyn_tenant_id", tenantId);
       localStorage.setItem("nexyn_user_id", userId);
-      
+
       setSaved(true);
       setIsConfigured(true);
       setTimeout(() => {
@@ -83,7 +83,7 @@ export default function LogsPage() {
     const storedCogneeUrl = localStorage.getItem("nexyn_cognee_url");
     const storedTenant = localStorage.getItem("nexyn_tenant_id") || "hackathon_demo";
     let storedUser = localStorage.getItem("nexyn_user_id");
-    
+
     if (!storedUser) {
       storedUser = Math.random().toString(36).substring(2, 10);
       localStorage.setItem("nexyn_user_id", storedUser);
@@ -114,7 +114,7 @@ export default function LogsPage() {
       const data = await res.json();
       setLogs(data);
       setNow(Date.now());
-      
+
       // Removed smart polling auto-stop to guarantee perfect sync during the demo
     } catch (e) {
       console.error(e);
@@ -130,7 +130,7 @@ export default function LogsPage() {
       console.error("Failed to clear data", e);
     }
   };
-  
+
   const handleMemify = async () => {
     setMemifying(true);
     try {
@@ -143,7 +143,7 @@ export default function LogsPage() {
       setMemifying(false);
     }
   };
-  
+
   const [sweeping, setSweeping] = useState(false);
   const handleSweep = async () => {
     setSweeping(true);
@@ -160,7 +160,7 @@ export default function LogsPage() {
   const handleRecall = async (e: any) => {
     e.preventDefault();
     if (!query) return;
-    
+
     setSearching(true);
     try {
       const res = await fetch(`${API_BASE}/api/recall`, {
@@ -170,7 +170,7 @@ export default function LogsPage() {
       });
       const data = await res.json();
       setRecallResults(data);
-      
+
       fetchLogs();
     } catch (e) {
       console.error(e);
@@ -182,7 +182,7 @@ export default function LogsPage() {
   const handleIngest = async (e: any) => {
     e.preventDefault();
     if (!ingestText) return;
-    
+
     setIngesting(true);
     try {
       const res = await fetch(`${API_BASE}/nexyn/ingest`, {
@@ -211,37 +211,37 @@ export default function LogsPage() {
   // SSE Real-time Streaming
   useEffect(() => {
     if (!isConfigured) return;
-    
+
     // Construct headers for SSE (EventSource doesn't support custom headers easily, so we use query params)
     const tenantId = localStorage.getItem("nexyn_tenant_id") || "hackathon_demo";
     const userId = localStorage.getItem("nexyn_user_id") || "anonymous";
-    
+
     // Since native EventSource doesn't support headers, we must send the keys in a way the backend can read them.
     // Wait, the backend expects `x-tenant-id` and `x-user-id` as HEADERS!
     // We'll need a custom fetch-based SSE or we'll update the backend to accept query parameters!
     // Since we're using a fetch-based approach for SSE, let's just use it:
     const abortController = new AbortController();
-    
+
     const connectSSE = async () => {
       try {
         const response = await fetch(`${API_BASE}/api/memories/stream`, {
           headers: getHeaders(),
           signal: abortController.signal
         });
-        
+
         if (!response.body) return;
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
-        
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n\n');
           buffer = lines.pop() || "";
-          
+
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               const dataStr = line.substring(6);
@@ -262,7 +262,7 @@ export default function LogsPage() {
         }
       }
     };
-    
+
     connectSSE();
     return () => abortController.abort();
   }, [isConfigured]);
@@ -278,7 +278,7 @@ export default function LogsPage() {
   return (
     <div className="min-h-screen bg-black text-white p-8 font-sans">
       <div className="max-w-7xl mx-auto pt-16">
-        
+
         {/* HEADER */}
         <div className="flex justify-between items-end mb-12 border-b border-[#333333] pb-6">
           <div className="flex items-center gap-4">
@@ -286,7 +286,7 @@ export default function LogsPage() {
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-white mb-2 flex items-center gap-4">
                 Nexyn Internals
-                <button 
+                <button
                   onClick={() => setSettingsOpen(true)}
                   className="p-2 bg-[#1A1A1A] hover:bg-[#333333] border border-[#333333] rounded-md transition-colors text-[#A1A1AA] hover:text-white"
                   title="Configure API Keys"
@@ -314,23 +314,23 @@ export default function LogsPage() {
             </div>
           ))}
         </div>
-        
+
         {/* LAYER 1/2 TESTER */}
         <div className="bg-[#0A0A0A] border border-[#333333] rounded-md p-6 mb-6 relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Layers className="w-4 h-4 text-[#888888]" />
             <h2 className="text-sm font-medium text-white">Test Layers 1 & 2 (Ingest & Evaluate)</h2>
           </div>
-          
+
           <form onSubmit={handleIngest} className="flex gap-3 relative z-10">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={ingestText}
               onChange={(e) => setIngestText(e.target.value)}
-              placeholder="Inject raw text into sensory buffer..." 
+              placeholder="Inject raw text into sensory buffer..."
               className="flex-1 bg-black border border-[#333333] rounded-md px-4 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888] transition-colors"
             />
-            <button 
+            <button
               type="submit"
               disabled={ingesting || !ingestText.trim() || !isConfigured}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
@@ -338,7 +338,7 @@ export default function LogsPage() {
               {ingesting ? 'Ingesting...' : 'Ingest'}
             </button>
           </form>
-          
+
           {ingestResult && (
             <div className="mt-4 bg-black border border-[#333333] rounded-md p-4 relative z-10">
               <div className="text-xs text-[#888888] mb-2 uppercase tracking-widest font-medium">Result</div>
@@ -346,7 +346,7 @@ export default function LogsPage() {
             </div>
           )}
         </div>
-        
+
 
         {/* GLOBAL REGISTRY TABLE */}
         <div className="flex justify-between items-center mb-4">
@@ -356,7 +356,7 @@ export default function LogsPage() {
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={handleSweep}
                 disabled={sweeping || !isConfigured}
                 title="Manually fast-forward time and prune dead memories."
@@ -365,7 +365,7 @@ export default function LogsPage() {
                 <FastForward className="w-3 h-3" />
                 {sweeping ? 'Consolidating...' : 'Sweep & Prune'}
               </button>
-              <button 
+              <button
                 onClick={handleMemify}
                 disabled={memifying || !isConfigured}
                 title="Convert unstructured text traces into semantic knowledge graph nodes."
@@ -374,7 +374,7 @@ export default function LogsPage() {
                 <BrainCircuit className="w-3 h-3" />
                 {memifying ? 'Running Improve()...' : 'Memify Graph'}
               </button>
-              <button 
+              <button
                 onClick={handleClearData}
                 disabled={!isConfigured}
                 title="Wipe your personal memory graph clean."
@@ -382,7 +382,7 @@ export default function LogsPage() {
               >
                 Clear Registry
               </button>
-              <button 
+              <button
                 onClick={fetchLogs}
                 disabled={!isConfigured}
                 title="Refresh the table below."
@@ -397,7 +397,7 @@ export default function LogsPage() {
             </div>
           </div>
         </div>
-        
+
         <AnimatePresence>
           {memifySuccess && (
             <motion.div
@@ -421,7 +421,7 @@ export default function LogsPage() {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {loading ? (
           <div className="animate-pulse space-y-2">
             <div className="h-10 bg-[#0A0A0A] rounded-md border border-[#333333]"></div>
@@ -444,7 +444,7 @@ export default function LogsPage() {
                 {logs.map((log: any) => {
                   const created = new Date(log.created_at);
                   const aliveDays = Math.max(0, (now - created.getTime()) / (1000 * 60 * 60 * 24));
-                  
+
                   let wCurrent = null;
                   if (log.weight_initial !== null && log.decay_rate !== null) {
                     wCurrent = Math.max(0, log.weight_initial - (log.decay_rate * aliveDays));
@@ -460,59 +460,59 @@ export default function LogsPage() {
                   } else {
                     ageDisplay = `${aliveDays.toFixed(2)}d`;
                   }
-                  
+
                   return (
                     <React.Fragment key={log.node_id}>
-                  <tr className="border-b border-[#222222] hover:bg-[#111111] transition-colors">
-                    <td className="p-3 border-r border-[#333333] max-w-xs">
-                      <div className="text-[10px] text-[#555555] font-mono mb-1 leading-none">{log.node_id.substring(0, 8)}</div>
-                      <div className="text-sm text-[#E5E5E5] truncate" title={log.text}>{log.text}</div>
-                    </td>
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                       <span className="text-sm text-white font-mono">{log.valence_score}</span>
-                    </td>
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <div className="text-sm text-[#4CAF50] font-mono font-medium">
-                        {wCurrent === null ? '∞' : wCurrent.toFixed(2)}
-                      </div>
-                      <div className="text-[10px] text-[#555555] font-mono mt-0.5">
-                        Start: {log.weight_initial === null ? '∞' : log.weight_initial}
-                      </div>
-                    </td>
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <span className="text-sm text-[#A1A1AA] font-mono">
-                        {log.decay_rate} / d
-                      </span>
-                    </td>
-                    
-                    <td className="p-3 border-r border-[#333333] text-right align-middle">
-                      <span className="text-sm text-[#A1A1AA] font-mono">
-                        {ageDisplay}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center align-middle">
-                      <div className="flex justify-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border ${
-                          log.status === 'active' ? 'bg-[#0A0A0A] border-[#333333] text-white' :
-                          log.status === 'evaluating (layer 2)' ? 'bg-[#1a1a1a] border-[#ffb000] text-[#ffb000] animate-pulse' :
-                          log.status === 'pending_prune' ? 'bg-[#1a1a1a] border-[#555555] text-[#A1A1AA]' :
-                          'bg-transparent border-[#333333] text-[#555555]'
-                        }`}>
-                          {log.status}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                  {log.reason && log.status !== 'evaluating (layer 2)' && (
-                    <tr className="border-b border-[#222222] bg-[#050505]">
-                      <td colSpan={6} className="p-3 pl-6 text-xs text-[#888888] font-mono italic">
-                        <span className="text-[#A1A1AA] font-semibold not-italic">L2 Rationale: </span> 
-                        {log.reason}
-                      </td>
-                    </tr>
-                  )}
-                  </React.Fragment>
-                )})}
+                      <tr className="border-b border-[#222222] hover:bg-[#111111] transition-colors">
+                        <td className="p-3 border-r border-[#333333] max-w-xs">
+                          <div className="text-[10px] text-[#555555] font-mono mb-1 leading-none">{log.node_id.substring(0, 8)}</div>
+                          <div className="text-sm text-[#E5E5E5] truncate" title={log.text}>{log.text}</div>
+                        </td>
+                        <td className="p-3 border-r border-[#333333] text-center align-middle">
+                          <span className="text-sm text-white font-mono">{log.valence_score}</span>
+                        </td>
+                        <td className="p-3 border-r border-[#333333] text-center align-middle">
+                          <div className="text-sm text-[#4CAF50] font-mono font-medium">
+                            {wCurrent === null ? '∞' : wCurrent.toFixed(2)}
+                          </div>
+                          <div className="text-[10px] text-[#555555] font-mono mt-0.5">
+                            Start: {log.weight_initial === null ? '∞' : log.weight_initial}
+                          </div>
+                        </td>
+                        <td className="p-3 border-r border-[#333333] text-center align-middle">
+                          <span className="text-sm text-[#A1A1AA] font-mono">
+                            {log.decay_rate} / d
+                          </span>
+                        </td>
+
+                        <td className="p-3 border-r border-[#333333] text-right align-middle">
+                          <span className="text-sm text-[#A1A1AA] font-mono">
+                            {ageDisplay}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center align-middle">
+                          <div className="flex justify-center">
+                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border ${log.status === 'active' ? 'bg-[#0A0A0A] border-[#333333] text-white' :
+                                log.status === 'evaluating (layer 2)' ? 'bg-[#1a1a1a] border-[#ffb000] text-[#ffb000] animate-pulse' :
+                                  log.status === 'pending_prune' ? 'bg-[#1a1a1a] border-[#555555] text-[#A1A1AA]' :
+                                    'bg-transparent border-[#333333] text-[#555555]'
+                              }`}>
+                              {log.status}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      {log.reason && log.status !== 'evaluating (layer 2)' && (
+                        <tr className="border-b border-[#222222] bg-[#050505]">
+                          <td colSpan={6} className="p-3 pl-6 text-xs text-[#888888] font-mono italic">
+                            <span className="text-[#A1A1AA] font-semibold not-italic">L2 Rationale: </span>
+                            {log.reason}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
                 {logs.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-[#555555] text-sm">
@@ -524,23 +524,23 @@ export default function LogsPage() {
             </table>
           </div>
         )}
-        
+
         {/* LAYER 4 TESTER */}
         <div className="bg-[#0A0A0A] border border-[#333333] rounded-md p-6 mt-12 mb-12 relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Search className="w-4 h-4 text-[#888888]" />
             <h2 className="text-sm font-medium text-white">Test Layer 4 (Recall & Reinforce)</h2>
           </div>
-          
+
           <form onSubmit={handleRecall} className="flex gap-3 mb-6 relative z-10">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Query the memory graph..." 
+              placeholder="Query the memory graph..."
               className="flex-1 bg-black border border-[#333333] rounded-md px-4 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888] transition-colors"
             />
-            <button 
+            <button
               type="submit"
               disabled={searching || !query.trim() || !isConfigured}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
@@ -548,19 +548,19 @@ export default function LogsPage() {
               {searching ? 'Searching...' : 'Recall'}
             </button>
           </form>
-          
+
           {recallResults && (
             <div className="bg-black border border-[#333333] rounded-md p-4 relative z-10">
               <div className="text-xs text-[#888888] mb-4 uppercase tracking-widest font-medium">Top Results</div>
-              
+
               {recallResults.error && (
                 <div className="text-red-400 text-sm font-mono">Error: {recallResults.error}</div>
               )}
-              
+
               {!recallResults.error && recallResults.matches?.length === 0 && (
                 <div className="text-[#555555] text-sm italic">No relevant memories found in graph.</div>
               )}
-              
+
               {!recallResults.error && recallResults.matches?.length > 0 && (
                 <div className="space-y-2">
                   {recallResults.matches.map((m: any, i: number) => (
@@ -587,7 +587,7 @@ export default function LogsPage() {
           )}
         </div>
       </div>
-      
+
       <AnimatePresence>
         {settingsOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -600,16 +600,16 @@ export default function LogsPage() {
               <button onClick={() => setSettingsOpen(false)} className="absolute top-4 right-4 text-[#888888] hover:text-white">
                 <X className="w-5 h-5" />
               </button>
-              
+
               <h2 className="text-xl font-semibold text-white mb-2">Hackathon Configuration</h2>
               <p className="text-sm text-[#888888] mb-6">Enter your API keys and User ID to isolate your graph.</p>
-              
+
               {backendError && (
                 <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-400 text-sm">
                   Backend connection failed. Is it running?
                 </div>
               )}
-              
+
               <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                 <div className="pb-4 border-b border-[#333333]">
                   <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium mb-1">
@@ -626,7 +626,7 @@ export default function LogsPage() {
                     className="w-full bg-black border border-[#333333] rounded-md px-3 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888]"
                   />
                 </div>
-                
+
                 <div className="pt-2">
                   <div className="flex justify-between items-end mb-1">
                     <label className="block text-xs uppercase tracking-wider text-[#A1A1AA] font-medium">Cognee Configuration</label>
@@ -678,7 +678,7 @@ export default function LogsPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3">
                 <button onClick={() => setSettingsOpen(false)} className="px-4 py-2 text-sm font-medium text-[#A1A1AA] hover:text-white transition-colors">
                   Cancel

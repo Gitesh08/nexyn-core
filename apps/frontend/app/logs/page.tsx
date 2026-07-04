@@ -5,12 +5,12 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers } from "lucide-react";
 
 export default function LogsPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
-  
+
   // Layer 4 state
   const [query, setQuery] = useState("");
   const [recallResults, setRecallResults] = useState<any>(null);
@@ -20,7 +20,7 @@ export default function LogsPage() {
   const [ingestText, setIngestText] = useState("");
   const [ingestResult, setIngestResult] = useState<any>(null);
   const [ingesting, setIngesting] = useState(false);
-  
+
   // Smart Polling State
   const [isPolling, setIsPolling] = useState(false);
 
@@ -30,7 +30,7 @@ export default function LogsPage() {
       const data = await res.json();
       setLogs(data);
       setNow(Date.now());
-      
+
       // Auto-stop polling if nothing is evaluating
       if (isPolling && !data.some((log: any) => log.status === 'evaluating (layer 2)')) {
         setIsPolling(false);
@@ -50,11 +50,11 @@ export default function LogsPage() {
       console.error("Failed to clear data", e);
     }
   };
-  
+
   const handleRecall = async (e: any) => {
     e.preventDefault();
     if (!query) return;
-    
+
     setSearching(true);
     try {
       const res = await fetch(`${API_BASE}/api/recall`, {
@@ -64,7 +64,7 @@ export default function LogsPage() {
       });
       const data = await res.json();
       setRecallResults(data);
-      
+
       fetchLogs();
     } catch (e) {
       console.error(e);
@@ -76,7 +76,7 @@ export default function LogsPage() {
   const handleIngest = async (e: any) => {
     e.preventDefault();
     if (!ingestText) return;
-    
+
     setIngesting(true);
     try {
       const res = await fetch(`${API_BASE}/nexyn/ingest`, {
@@ -87,10 +87,10 @@ export default function LogsPage() {
       const data = await res.json();
       setIngestResult(data);
       setIngestText("");
-      
+
       // Smart Polling: Turn on aggressive polling, it will auto-disable when evaluation finishes!
       setIsPolling(true);
-      
+
     } catch (e) {
       console.error(e);
       setIngestResult({ error: String(e) });
@@ -125,7 +125,7 @@ export default function LogsPage() {
   return (
     <div className="min-h-screen bg-black text-white p-8 font-sans">
       <div className="max-w-7xl mx-auto pt-16">
-        
+
         {/* HEADER */}
         <div className="flex justify-between items-end mb-12 border-b border-[#333333] pb-6">
           <div className="flex items-center gap-4">
@@ -154,23 +154,23 @@ export default function LogsPage() {
             </div>
           ))}
         </div>
-        
+
         {/* LAYER 1/2 TESTER */}
         <div className="bg-[#0A0A0A] border border-[#333333] rounded-md p-6 mb-6 relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Layers className="w-4 h-4 text-[#888888]" />
             <h2 className="text-sm font-medium text-white">Test Layers 1 & 2 (Ingest & Evaluate)</h2>
           </div>
-          
+
           <form onSubmit={handleIngest} className="flex gap-3 relative z-10">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={ingestText}
               onChange={(e) => setIngestText(e.target.value)}
-              placeholder="Inject raw text into sensory buffer..." 
+              placeholder="Inject raw text into sensory buffer..."
               className="flex-1 bg-black border border-[#333333] rounded-md px-4 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888] transition-colors"
             />
-            <button 
+            <button
               type="submit"
               disabled={ingesting || !ingestText.trim()}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
@@ -178,7 +178,7 @@ export default function LogsPage() {
               {ingesting ? 'Ingesting...' : 'Ingest'}
             </button>
           </form>
-          
+
           {ingestResult && (
             <div className="mt-4 bg-black border border-[#333333] rounded-md p-4 relative z-10">
               <div className="text-xs text-[#888888] mb-2 uppercase tracking-widest font-medium">Result</div>
@@ -186,7 +186,7 @@ export default function LogsPage() {
             </div>
           )}
         </div>
-        
+
 
         {/* GLOBAL REGISTRY TABLE */}
         <div className="flex justify-between items-center mb-4">
@@ -195,13 +195,13 @@ export default function LogsPage() {
             <h2 className="text-sm font-medium text-white">Registry State (Layers 1-3)</h2>
           </div>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={handleClearData}
               className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#ff4444] text-[#ff4444] transition-colors rounded text-xs font-medium flex items-center gap-2"
             >
               Clear Registry
             </button>
-            <button 
+            <button
               onClick={fetchLogs}
               className="px-3 py-1.5 bg-white hover:bg-[#E5E5E5] text-black transition-colors rounded text-xs font-medium flex items-center gap-2"
             >
@@ -210,7 +210,7 @@ export default function LogsPage() {
             </button>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="animate-pulse space-y-2">
             <div className="h-10 bg-[#0A0A0A] rounded-md border border-[#333333]"></div>
@@ -233,7 +233,7 @@ export default function LogsPage() {
                 {logs.map((log: any) => {
                   const created = new Date(log.created_at);
                   const aliveDays = Math.max(0, (now - created.getTime()) / (1000 * 60 * 60 * 24));
-                  
+
                   let wCurrent = null;
                   if (log.weight_initial !== null && log.decay_rate !== null) {
                     wCurrent = Math.max(0, log.weight_initial - (log.decay_rate * aliveDays));
@@ -249,50 +249,50 @@ export default function LogsPage() {
                   } else {
                     ageDisplay = `${aliveDays.toFixed(2)}d`;
                   }
-                  
+
                   return (
-                  <tr key={log.node_id} className="hover:bg-[#111111] transition-colors">
-                    <td className="p-3 border-r border-[#333333] max-w-xs">
-                      <div className="text-[10px] text-[#555555] font-mono mb-1 leading-none">{log.node_id.substring(0, 8)}</div>
-                      <div className="text-sm text-[#E5E5E5] truncate" title={log.text}>{log.text}</div>
-                    </td>
-                    
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <span className="text-sm text-white font-mono">{log.valence_score}</span>
-                    </td>
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <div className="text-sm text-[#4CAF50] font-mono font-medium">
-                        {wCurrent === null ? '∞' : wCurrent.toFixed(2)}
-                      </div>
-                      <div className="text-[10px] text-[#555555] font-mono mt-0.5">
-                        Start: {log.weight_initial === null ? '∞' : log.weight_initial}
-                      </div>
-                    </td>
-                    <td className="p-3 border-r border-[#333333] text-center align-middle">
-                      <span className="text-sm text-[#A1A1AA] font-mono">
-                        {log.decay_rate} / d
-                      </span>
-                    </td>
-                    
-                    <td className="p-3 border-r border-[#333333] text-right align-middle">
-                      <span className="text-sm text-[#A1A1AA] font-mono">
-                        {ageDisplay}
-                      </span>
-                    </td>
-                    <td className="p-3 text-center align-middle">
-                      <div className="flex justify-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border ${
-                          log.status === 'active' ? 'bg-[#0A0A0A] border-[#333333] text-white' :
-                          log.status === 'evaluating (layer 2)' ? 'bg-[#1a1a1a] border-[#ffb000] text-[#ffb000] animate-pulse' :
-                          log.status === 'pending_prune' ? 'bg-[#1a1a1a] border-[#555555] text-[#A1A1AA]' :
-                          'bg-transparent border-[#333333] text-[#555555]'
-                        }`}>
-                          {log.status}
+                    <tr key={log.node_id} className="hover:bg-[#111111] transition-colors">
+                      <td className="p-3 border-r border-[#333333] max-w-xs">
+                        <div className="text-[10px] text-[#555555] font-mono mb-1 leading-none">{log.node_id.substring(0, 8)}</div>
+                        <div className="text-sm text-[#E5E5E5] truncate" title={log.text}>{log.text}</div>
+                      </td>
+
+                      <td className="p-3 border-r border-[#333333] text-center align-middle">
+                        <span className="text-sm text-white font-mono">{log.valence_score}</span>
+                      </td>
+                      <td className="p-3 border-r border-[#333333] text-center align-middle">
+                        <div className="text-sm text-[#4CAF50] font-mono font-medium">
+                          {wCurrent === null ? '∞' : wCurrent.toFixed(2)}
+                        </div>
+                        <div className="text-[10px] text-[#555555] font-mono mt-0.5">
+                          Start: {log.weight_initial === null ? '∞' : log.weight_initial}
+                        </div>
+                      </td>
+                      <td className="p-3 border-r border-[#333333] text-center align-middle">
+                        <span className="text-sm text-[#A1A1AA] font-mono">
+                          {log.decay_rate} / d
                         </span>
-                      </div>
-                    </td>
-                  </tr>
-                )})}
+                      </td>
+
+                      <td className="p-3 border-r border-[#333333] text-right align-middle">
+                        <span className="text-sm text-[#A1A1AA] font-mono">
+                          {ageDisplay}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center align-middle">
+                        <div className="flex justify-center">
+                          <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border ${log.status === 'active' ? 'bg-[#0A0A0A] border-[#333333] text-white' :
+                              log.status === 'evaluating (layer 2)' ? 'bg-[#1a1a1a] border-[#ffb000] text-[#ffb000] animate-pulse' :
+                                log.status === 'pending_prune' ? 'bg-[#1a1a1a] border-[#555555] text-[#A1A1AA]' :
+                                  'bg-transparent border-[#333333] text-[#555555]'
+                            }`}>
+                            {log.status}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
                 {logs.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-[#555555] text-sm">
@@ -304,23 +304,23 @@ export default function LogsPage() {
             </table>
           </div>
         )}
-        
+
         {/* LAYER 4 TESTER */}
         <div className="bg-[#0A0A0A] border border-[#333333] rounded-md p-6 mt-12 mb-12 relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Search className="w-4 h-4 text-[#888888]" />
             <h2 className="text-sm font-medium text-white">Test Layer 4 (Recall & Reinforce)</h2>
           </div>
-          
+
           <form onSubmit={handleRecall} className="flex gap-3 mb-6 relative z-10">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Query the memory graph..." 
+              placeholder="Query the memory graph..."
               className="flex-1 bg-black border border-[#333333] rounded-md px-4 py-2 text-sm text-white placeholder-[#555555] focus:outline-none focus:border-[#888888] transition-colors"
             />
-            <button 
+            <button
               type="submit"
               disabled={searching || !query.trim()}
               className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
@@ -328,19 +328,19 @@ export default function LogsPage() {
               {searching ? 'Searching...' : 'Recall'}
             </button>
           </form>
-          
+
           {recallResults && (
             <div className="bg-black border border-[#333333] rounded-md p-4 relative z-10">
               <div className="text-xs text-[#888888] mb-4 uppercase tracking-widest font-medium">Top Results</div>
-              
+
               {recallResults.error && (
                 <div className="text-red-400 text-sm font-mono">Error: {recallResults.error}</div>
               )}
-              
+
               {!recallResults.error && recallResults.matches?.length === 0 && (
                 <div className="text-[#555555] text-sm italic">No relevant memories found in graph.</div>
               )}
-              
+
               {!recallResults.error && recallResults.matches?.length > 0 && (
                 <div className="space-y-2">
                   {recallResults.matches.map((m: any, i: number) => (

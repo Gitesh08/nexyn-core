@@ -104,9 +104,19 @@ async def remember(
     CHUNKS indexer which runs at remember() time.
     """
     stored_text = _embed_metadata(text, metadata) if metadata else text
-    return await _safe_cognee_execute(
-        api_key, cognee_url, cognee.remember, stored_text, dataset_name=dataset
-    )
+    logger.info(f"[DEBUG remember] Attempting to add text to dataset '{dataset}'")
+    try:
+        res = await _safe_cognee_execute(
+            api_key, cognee_url, cognee.add, stored_text, dataset_name=dataset
+        )
+        logger.info(f"[DEBUG remember] cognee.add result: {res}")
+        return res
+    except AttributeError:
+        # Fallback for older cognee versions
+        logger.info(f"[DEBUG remember] Fallback to cognee.remember")
+        return await _safe_cognee_execute(
+            api_key, cognee_url, cognee.remember, stored_text, dataset_name=dataset
+        )
 
 
 async def search_chunks(
@@ -121,16 +131,25 @@ async def search_chunks(
     Returns normalized dicts with (text, score, raw, metadata).
     """
     async def _search():
+        logger.info(f"[DEBUG search_chunks] Executing cognee.search with query_text='{query}', datasets=['{dataset}']")
         entries = await cognee.search(
             query_type="CHUNKS",
             query_text=query,
             datasets=[dataset],
         )
+        logger.info(f"[DEBUG search_chunks] raw entries returned from cognee: {entries}")
         results = []
         for entry in entries:
-            r = _normalize_entry(entry)
-            if r and r.get("text"):
-                results.append(r)
+            if isinstance(entry, dict) and "search_result" in entry:
+                for sub_entry in entry["search_result"]:
+                    r = _normalize_entry(sub_entry)
+                    if r and r.get("text"):
+                        results.append(r)
+            else:
+                r = _normalize_entry(entry)
+                if r and r.get("text"):
+                    results.append(r)
+        logger.info(f"[DEBUG search_chunks] Final normalized results count: {len(results)}")
         return results[:top_k]
 
     try:
@@ -158,9 +177,15 @@ async def search_insights(
         )
         results = []
         for entry in entries:
-            r = _normalize_entry(entry)
-            if r and r.get("text"):
-                results.append(r)
+            if isinstance(entry, dict) and "search_result" in entry:
+                for sub_entry in entry["search_result"]:
+                    r = _normalize_entry(sub_entry)
+                    if r and r.get("text"):
+                        results.append(r)
+            else:
+                r = _normalize_entry(entry)
+                if r and r.get("text"):
+                    results.append(r)
         return results[:top_k]
 
     try:

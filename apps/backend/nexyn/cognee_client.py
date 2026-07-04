@@ -20,7 +20,7 @@ def _normalize_recall_entry(entry) -> dict:
     if isinstance(entry, str):
         return {"text": entry, "score": None, "raw": {}, "metadata": {}}
     if isinstance(entry, dict):
-        text = entry.get("text") or entry.get("content") or entry.get("chunk_text") or entry.get("chunk") or ""
+        text = entry.get("text") or entry.get("content") or entry.get("chunk_text") or entry.get("chunk") or entry.get("name") or entry.get("description") or ""
         
         return {
             "text": text,
@@ -29,8 +29,9 @@ def _normalize_recall_entry(entry) -> dict:
             "metadata": entry.get("metadata", {}) or {},
         }
     else:
+        text = getattr(entry, "text", None) or getattr(entry, "content", None) or getattr(entry, "name", None) or getattr(entry, "description", "")
         return {
-            "text": getattr(entry, "text", None) or getattr(entry, "content", ""),
+            "text": text,
             "score": getattr(entry, "score", None),
             "raw": getattr(entry, "raw", {}) or {},
             "metadata": getattr(entry, "metadata", {}) or {},
@@ -86,7 +87,8 @@ async def cognify(api_key: str, cognee_url: str = None, datasets: list[str] = No
 async def recall(query: str, api_key: str, cognee_url: str = None, dataset: str = "general", top_k: int = 5) -> list[dict]:
     """Wrapper for cognee.search to return exact chunk matches."""
     async def _search():
-        entries = await cognee.search(query_text=query, query_type="CHUNKS", datasets=[dataset])
+        # Cognee relies heavily on 'INSIGHTS' for semantic vector searches
+        entries = await cognee.search(query_type="INSIGHTS", query_text=query, datasets=[dataset])
         normalized = []
         for dataset_entry in entries:
             if isinstance(dataset_entry, dict) and "search_result" in dataset_entry:

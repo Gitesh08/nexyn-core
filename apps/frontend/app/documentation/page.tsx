@@ -382,14 +382,8 @@ export default function DocumentationPage() {
                     </p>
                     <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-5 font-mono text-sm flex flex-col gap-3">
                       <div>
-                        <span className="text-[#555555] block mb-1"># Using standard pip</span>
-                        <span className="text-[#555555] select-none mr-4">$</span>
+                        <span className="text-[#555555] block mb-1"># Standard installation</span>
                         <span className="text-white">pip install nexyn-core</span>
-                      </div>
-                      <div>
-                        <span className="text-[#555555] block mb-1"># Using uv (Recommended)</span>
-                        <span className="text-[#555555] select-none mr-4">$</span>
-                        <span className="text-white">uv pip install nexyn-core</span>
                       </div>
                     </div>
                   </div>

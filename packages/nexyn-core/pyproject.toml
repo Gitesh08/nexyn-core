@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexyn-core"
-version = "1.0.0"
+version = "1.0.1"
 description = "A biological memory upgrade layer for Cognee, adding Valence, Consolidation, and Decay physics to vector graphs."
 authors = [
-    { name = "Nexyn Core Team", email = "hello@nexyn.ai" }
+    { name = "Nexyn Core Team", email = "gmahadik8080@gmail.com" }
 ]
 license = { text = "MIT" }
 readme = "README.md"
@@ -30,5 +30,7 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/nexyn-ai/nexyn-core"
-"Bug Tracker" = "https://github.com/nexyn-ai/nexyn-core/issues"
+"Homepage" = "https://github.com/Gitesh08/nexyn-core"
+"Website" = "https://synapse-ivory-ten.vercel.app"
+"Documentation" = "https://github.com/Gitesh08/nexyn-core/blob/main/README.md"
+"Demo" = "https://synapse-ivory-ten.vercel.app/demo"

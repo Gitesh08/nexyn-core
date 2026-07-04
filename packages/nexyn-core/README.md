@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/Gitesh08/nexyn-core/main/apps/frontend/public/nexyn-logo.svg" alt="Nexyn Logo" width="120" />
+  <img src="https://raw.githubusercontent.com/Gitesh08/nexyn-core/main/apps/frontend/public/nexyn-logo.svg" alt="Nexyn Logo" width="120" />
   <p><strong>Biological Memory Consolidation for Cognee</strong></p>
   
   [![PyPI version](https://badge.fury.io/py/nexyn-core.svg)](https://badge.fury.io/py/nexyn-core)

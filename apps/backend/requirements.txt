@@ -1,14 +1,8 @@
-fastapi>=0.116.2,<1.0.0
+fastapi>=0.100.0
 uvicorn[standard]>=0.34.0,<1.0.0
-cognee
-pydantic>=2.4.2
-pydantic-settings
-aiosqlite
-apscheduler
-tenacity
-httpx
-python-dotenv
-pytest>=7.4.3
-pytest-asyncio
-pytest-mock
-asyncpg
+sqlalchemy>=2.0.0
+python-dotenv>=1.0.0
+cognee>=0.1.20
+pydantic>=2.0.0
+openai>=1.0.0
+-e ../../packages/nexyn-core

@@ -67,16 +67,16 @@ export function CodePlayground() {
                 className="absolute inset-0 p-6"
               >
                 <div className="text-[#888888]">
-                  <span className="text-[#888888]">{"// 1. Unfiltered ingestion (Causes Bloat)"}</span><br/>
-                  <span className="text-white">import</span> {"{ cognee }"} <span className="text-white">from</span> <span className="text-[#A1A1AA]">'cognee'</span>;<br/>
+                  <span className="text-[#888888]">{"// Without Nexyn: everything is stored permanently"}</span><br/>
+                  <span className="text-white">import</span> cognee <span className="text-white">from</span> <span className="text-[#A1A1AA]">'cognee'</span>;<br/>
                   <br/>
                   <span className="text-white">const</span> data = <span className="text-[#A1A1AA]">"User accidentally pasted a 500-page terms of service here."</span>;<br/>
                   <br/>
-                  <span className="text-white">await</span> cognee.add(data);<br/>
+                  <span className="text-white">await</span> cognee.remember(data);<br/>
                   <span className="text-white">await</span> cognee.cognify();<br/>
                   <br/>
                   <span className="text-[#888888]">{"// Result: The entire 500-page doc is permanently vectorized."}</span><br/>
-                  <span className="text-[#888888]">{"// Next search for 'user preferences' will lag out."}</span><br/>
+                  <span className="text-[#888888]">{"// Every future recall drags this noise along with it."}</span><br/>
                 </div>
               </motion.div>
             ) : (
@@ -89,19 +89,16 @@ export function CodePlayground() {
                 className="absolute inset-0 p-6"
               >
                 <div className="text-[#A1A1AA]">
-                  <span className="text-[#888888]">{"// 1. Biological Ingestion (Prunes Garbage)"}</span><br/>
-                  <span className="text-white">import</span> {"{ Nexyn }"} <span className="text-white">from</span> <span className="text-[#A1A1AA]">'@veda/nexyn'</span>;<br/>
+                  <span className="text-[#888888]">{"// With Nexyn: biomimetic filtering before storage"}</span><br/>
+                  <span className="text-white">import</span> nexyn <span className="text-white">from</span> <span className="text-[#A1A1AA]">'nexyn-core'</span>;<br/>
                   <br/>
                   <span className="text-white">const</span> data = <span className="text-[#A1A1AA]">"User accidentally pasted a 500-page terms of service here."</span>;<br/>
                   <br/>
-                  <span className="text-[#888888]">{"// Buddhi immediately calculates the valency score."}</span><br/>
-                  <span className="text-white">const</span> score = <span className="text-white">await</span> Nexyn.evaluate(data); <span className="text-[#888888]">{"// Score: 1.2 (Trivial)"}</span><br/>
+                  <span className="text-[#888888]">{"// Nexyn evaluates importance before touching the graph."}</span><br/>
+                  <span className="text-white">await</span> nexyn.remember(data); <span className="text-[#888888]">{"// Score: 1.2 — Ephemeral. Dropped."}</span><br/>
                   <br/>
-                  <span className="text-[#888888]">{"// Route dynamically based on score."}</span><br/>
-                  <span className="text-white">await</span> Nexyn.route(data, score);<br/>
-                  <br/>
-                  <span className="text-[#888888]">{"// Result: Placed in the Sensory Buffer."}</span><br/>
-                  <span className="text-[#888888]">{"// Evicts automatically at midnight."}</span><br/>
+                  <span className="text-[#888888]">{"// Result: Nothing enters the knowledge graph."}</span><br/>
+                  <span className="text-[#888888]">{"// Future recalls stay fast and signal-rich."}</span><br/>
                 </div>
               </motion.div>
             )}

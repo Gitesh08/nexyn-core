@@ -6,24 +6,24 @@ import { Plus } from "lucide-react";
 
 const faqs = [
   {
-    question: "What exactly is Project Nexyn?",
-    answer: "Project Nexyn is a biomimetic cognitive wrapper. It sits on top of standard graph-vector databases to add automated evaluation, mathematical decay, and instinctual consolidation—preventing context amnesia."
+    question: "What exactly is Nexyn?",
+    answer: "Nexyn is a biomimetic memory layer that sits on top of Cognee. It adds automated importance evaluation, mathematical memory decay, and instinctual consolidation, preventing context bloat and keeping your AI's knowledge graph lean and relevant."
   },
   {
     question: "Doesn't Cognee already manage AI memory?",
-    answer: "Cognee is a highly powerful engine for building and querying knowledge graphs. However, naive usage leads to infinite data hoarding. We use Cognee as our core infrastructure, but Nexyn adds the \"Sleep Cycle\" (pruning and memifying) so the Cognee graph remains perfectly sparse and optimized over time."
+    answer: "Cognee is a powerful engine for building and querying knowledge graphs. However, without a filtering layer, every piece of data is stored permanently, causing context bloat. Nexyn wraps Cognee by scoring each input before it enters the graph, ensuring only high-value information is retained and stale data naturally decays."
   },
   {
     question: "How difficult is the integration?",
-    answer: "It is a drop-in replacement. Simply route your raw data through `Nexyn.evaluate()` before calling your standard `cognee.add()` and `cognee.cognify()` functions. The background pruning cycle handles the rest."
+    answer: "Very simple. Just install nexyn-core and call `nexyn.remember()` instead of `cognee.remember()`. Nexyn intercepts the call, evaluates the input's importance score, and decides whether to store, decay, or drop it. No changes needed to the rest of your Cognee setup."
   },
   {
-    question: "Does the Buddhi evaluation layer add high latency?",
-    answer: "No. The evaluation layer runs on localized Small Language Models (SLMs) returning strict Pydantic schemas. It is designed to be sub-second, ensuring ingestion remains incredibly fast."
+    question: "Does the evaluation layer add high latency?",
+    answer: "Minimal impact. The evaluation layer calls a fast NIM-hosted language model with a strict schema response. In practice this adds under a second to the ingest path. The improvement in retrieval quality and reduced graph bloat far outweighs this overhead."
   },
   {
     question: "Is this open source?",
-    answer: "Yes. Project Nexyn is fully open-source and designed to be run locally alongside your existing LLM architecture."
+    answer: "Yes. Nexyn is fully open-source. You can self-host the backend on any Python-compatible server and point it at your own Cognee instance, or use it alongside Cognee Cloud."
   }
 ];
 

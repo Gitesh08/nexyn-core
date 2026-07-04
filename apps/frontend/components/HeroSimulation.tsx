@@ -302,7 +302,7 @@ export function HeroSimulation() {
           transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="text-sm md:text-base lg:text-lg text-[#888888] mb-10 max-w-3xl mx-auto font-normal leading-relaxed"
         >
-          Watch vector graphs bloat. Watch Nexyn self-prune.
+          A biomimetic memory layer for Cognee. Filters noise on ingest, decays stale data over time, and compresses high-value patterns into permanent instincts.
         </motion.p>
 
         <motion.div 
@@ -370,7 +370,7 @@ export function HeroSimulation() {
                 <div className="flex flex-col bg-[#0A0A0A] rounded-md border border-[#333333] overflow-hidden h-full">
                   <div className="px-6 py-4 border-b border-[#333333] z-20 bg-black flex justify-between items-center">
                     <h3 className="text-white font-medium text-sm flex items-center gap-2">
-                      Hoarder AI <span className="text-[#888888] font-normal hidden sm:inline">(Vanilla Cognee)</span>
+                      Without Nexyn <span className="text-[#888888] font-normal hidden sm:inline">(Raw Cognee Pipeline)</span>
                     </h3>
                   </div>
                   
@@ -462,7 +462,7 @@ export function HeroSimulation() {
                 <div className="flex flex-col bg-[#0A0A0A] rounded-md border border-[#333333] overflow-hidden h-full">
                   <div className="px-6 py-4 border-b border-[#333333] z-20 bg-black flex justify-between items-center">
                     <h3 className="text-white font-medium text-sm flex items-center gap-2">
-                      Project Nexyn <span className="text-[#888888] font-normal hidden sm:inline">(4-Layer Architecture)</span>
+                      With Nexyn <span className="text-[#888888] font-normal hidden sm:inline">(4-Layer Memory Pipeline)</span>
                     </h3>
                   </div>
 

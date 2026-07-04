@@ -11,6 +11,7 @@ class NormalizedPayload(BaseModel):
     content_hash: str
     tenant_id: str
     user_id: str
+    dataset_name: Optional[str] = None
     nim_key: Optional[str] = None
     cognee_key: Optional[str] = None
     cognee_url: Optional[str] = None

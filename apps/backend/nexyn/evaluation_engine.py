@@ -169,7 +169,7 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                                 continue
                         
                     # Store in Cognee with embedded metadata so recall works without SQLite
-                    dataset_name = f"{payload.tenant_id}_{payload.user_id}_general"
+                    dataset_name = payload.dataset_name if payload.dataset_name else f"{payload.tenant_id}_{payload.user_id}_general"
                     params = get_kinetic_params(valence.score)
                     meta = {
                         "node_id": fission_hash,
@@ -282,7 +282,7 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                             )
                     
                     # Core rule (Normal Flow)
-                    dataset_core = f"{payload.tenant_id}_{payload.user_id}_core_rules"
+                    dataset_core = payload.dataset_name if payload.dataset_name else f"{payload.tenant_id}_{payload.user_id}_core_rules"
                     existing_rules = await cognee_client.recall(fission_text, payload.cognee_key, cognee_url=payload.cognee_url, dataset=dataset_core, top_k=10)
                     contradicted_id = await self.detect_contradiction(fission_text, existing_rules, payload.nim_key)
                     

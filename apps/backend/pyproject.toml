@@ -1,39 +1,34 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexyn-core"
-version = "0.1.0"
-description = "A biomimetic memory consolidation layer for LLMs"
+version = "1.0.0"
+description = "A biological memory upgrade layer for Cognee, adding Valence, Consolidation, and Decay physics to vector graphs."
 authors = [
-    { name = "Nexyn team", email = "gmahadik8080@gmail.com" }
+    { name = "Nexyn Core Team", email = "hello@nexyn.ai" }
 ]
+license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
-    "fastapi==0.104.1",
-    "uvicorn[standard]==0.24.0",
-    "cognee",
-    "pydantic>=2.4.2",
-    "pydantic-settings",
-    "aiosqlite",
-    "apscheduler",
-    "tenacity",
-    "httpx",
-    "python-dotenv",
-    "asyncpg"
+    "cognee>=0.1.20",
+    "pydantic>=2.0.0",
+    "openai>=1.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "sqlalchemy>=2.0.0",
+    "python-dotenv>=1.0.0"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.3",
-    "pytest-asyncio",
-    "pytest-mock"
-]
-
-[project.scripts]
-nexyn-server = "nexyn.main:run_server"
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
+[project.urls]
+"Homepage" = "https://github.com/nexyn-ai/nexyn-core"
+"Bug Tracker" = "https://github.com/nexyn-ai/nexyn-core/issues"

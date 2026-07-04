@@ -1,22 +1,8 @@
-"""Nexyn backend package."""
+"""
+Nexyn Core - The Biological Memory Layer for Cognee
+"""
 
-from .models import (
-    IngestPayload,
-    NormalizedPayload,
-    MemoryTrace,
-    RecallRequest,
-    RecallResult
-)
-from .config import settings
-from .registry import WeightRegistry, QueueRegistry
+from .api import inject, configure, sweep
 
-__all__ = [
-    "IngestPayload",
-    "NormalizedPayload",
-    "MemoryTrace",
-    "RecallRequest",
-    "RecallResult",
-    "WeightRegistry",
-    "QueueRegistry",
-    "settings"
-]
+__version__ = "1.0.0"
+__all__ = ["inject", "configure", "sweep"]

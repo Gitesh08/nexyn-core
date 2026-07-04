@@ -101,6 +101,8 @@ class RetrievalEngine:
     async def _cognee_tier(
         self,
         query: str,
+        tenant_id: str,
+        user_id: str,
         cognee_key: str,
         cognee_url: Optional[str],
         dataset_name: str,
@@ -128,7 +130,7 @@ class RetrievalEngine:
             return []
 
         matches: List[RecallMatch] = []
-        for entry in raw:
+        for rank, entry in enumerate(raw):
             text = (entry.get("text") or "").strip()
             if not text:
                 continue
@@ -139,6 +141,11 @@ class RetrievalEngine:
             w_initial = float(nexyn_meta.get("w_initial", 50.0))
             decay = float(nexyn_meta.get("decay_rate", 2.0))
             node_id_from_meta = nexyn_meta.get("node_id", "")
+            meta_tenant = nexyn_meta.get("tenant_id")
+            meta_user = nexyn_meta.get("user_id")
+
+            if meta_tenant and meta_user and (meta_tenant != tenant_id or meta_user != user_id):
+                continue
 
             # --- Try to enrich from local registry (bonus, not required) ---
             trace = None
@@ -163,11 +170,20 @@ class RetrievalEngine:
                 continue
 
             # --- Semantic score from Cognee + local overlap boost ---
-            cognee_score = float(entry.get("score") or 0.0)
+            raw_score = float(entry.get("score") or 0.0)
             bm25 = _bm25(query, text)
                         
-            # If Cognee gave a useful score use it; otherwise rely on BM25
-            semantic = max(cognee_score, bm25 * 0.8) if cognee_score > 0.05 else bm25
+            # Cognee/LanceDB returns distance (0 = perfect match, higher = worse).
+            # If Cognee omits the score (raw_score == 0.0), synthesize it from the rank, 
+            # because if it was returned by Tier 1, it is a valid semantic vector match!
+            if raw_score > 0:
+                cognee_sim = max(0.0, 1.0 - raw_score)
+            else:
+                # Synthesize high score based on nearest-neighbor rank (85% for top result)
+                cognee_sim = max(0.85 - (rank * 0.05), 0.50)
+            
+            # If Cognee gave a meaningful similarity, use it; otherwise rely on BM25
+            semantic = max(cognee_sim, bm25 * 0.8) if cognee_sim > 0.05 else bm25
 
             composite = _composite(semantic, valence, w_current)
 
@@ -277,7 +293,7 @@ class RetrievalEngine:
         try:
             cognee_matches = await asyncio.wait_for(
                 self._cognee_tier(
-                    request.query, cognee_key, cognee_url,
+                    request.query, tenant_id, user_id, cognee_key, cognee_url,
                     dataset_name, top_k, request.min_weight, now
                 ),
                 timeout=settings.retrieval_timeout_seconds
@@ -285,7 +301,6 @@ class RetrievalEngine:
         except asyncio.TimeoutError:
             logger.warning(f"Recall timed out after {settings.retrieval_timeout_seconds}s for query: {request.query}")
             return RecallResult(matches=[], error="timeout", is_timeout=True)
-        
         logger.info(f"Tier 1 (Cognee CHUNKS): {len(cognee_matches)} matches")
 
         # Tier 2 only if Tier 1 returned nothing

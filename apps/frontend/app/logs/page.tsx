@@ -5,7 +5,7 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers, ShieldAlert, Terminal } from "lucide-react";
 
 export default function LogsPage() {
-  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
   const [logs, setLogs] = useState([]);
   const [postgresLogs, setPostgresLogs] = useState([]);

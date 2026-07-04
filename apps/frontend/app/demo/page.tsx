@@ -5,7 +5,7 @@ import Image from "next/image";
 import { RotateCcw, Search, Database, Layers, BrainCircuit, Settings, X, Check, FastForward } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
@@ -27,6 +27,7 @@ export default function LogsPage() {
   // Memify state
   const [memifying, setMemifying] = useState(false);
   const [memifySuccess, setMemifySuccess] = useState(false);
+  const [hasMemified, setHasMemified] = useState(false);
 
   // Smart Polling State
   const [isPolling, setIsPolling] = useState(false);
@@ -136,6 +137,7 @@ export default function LogsPage() {
     try {
       await fetch(`${API_BASE}/api/memify`, { method: "POST", headers: getHeaders() });
       setMemifySuccess(true);
+      setHasMemified(true);
       setTimeout(() => setMemifySuccess(false), 3000);
     } catch (e) {
       console.error("Failed to memify", e);
@@ -366,15 +368,6 @@ export default function LogsPage() {
                 {sweeping ? 'Consolidating...' : 'Sweep & Prune'}
               </button>
               <button
-                onClick={handleMemify}
-                disabled={memifying || !isConfigured}
-                title="Convert unstructured text traces into semantic knowledge graph nodes."
-                className="px-3 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded text-xs font-medium flex items-center gap-2 disabled:opacity-50"
-              >
-                <BrainCircuit className="w-3 h-3" />
-                {memifying ? 'Running Improve()...' : 'Memify Graph'}
-              </button>
-              <button
                 onClick={handleClearData}
                 disabled={!isConfigured}
                 title="Wipe your personal memory graph clean."
@@ -533,6 +526,16 @@ export default function LogsPage() {
           </div>
 
           <form onSubmit={handleRecall} className="flex gap-3 mb-6 relative z-10">
+            <button
+              type="button"
+              onClick={handleMemify}
+              disabled={memifying || !isConfigured}
+              title="Convert unstructured text traces into semantic knowledge graph nodes."
+              className="px-4 py-2 bg-[#1A1A1A] hover:bg-[#333333] border border-[#a855f7] text-[#a855f7] transition-colors rounded-md text-sm font-medium flex items-center gap-2 disabled:opacity-50 shrink-0"
+            >
+              <BrainCircuit className="w-4 h-4" />
+              {memifying ? 'Memifying...' : '1. Memify'}
+            </button>
             <input
               type="text"
               value={query}
@@ -542,10 +545,11 @@ export default function LogsPage() {
             />
             <button
               type="submit"
-              disabled={searching || !query.trim() || !isConfigured}
-              className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium"
+              disabled={searching || !query.trim() || !isConfigured || !hasMemified}
+              title={!hasMemified ? "Click Memify first to build the vector index!" : ""}
+              className="px-6 py-2 bg-white text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors rounded-md text-sm font-medium shrink-0"
             >
-              {searching ? 'Searching...' : 'Recall'}
+              {searching ? 'Searching...' : '2. Recall'}
             </button>
           </form>
 

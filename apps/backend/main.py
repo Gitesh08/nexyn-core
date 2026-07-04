@@ -229,13 +229,23 @@ async def stream_memories(
 @app.delete("/api/memories")
 async def clear_memories(
     x_tenant_id: str = Header(..., alias="x-tenant-id"),
-    x_user_id: str = Header(..., alias="x-user-id")
+    x_user_id: str = Header(..., alias="x-user-id"),
+    x_cognee_key: str = Header(None, alias="x-cognee-key"),
+    x_cognee_url: str = Header(None, alias="x-cognee-url")
 ):
     """Clears all traces in the registry (useful for testing/demo)."""
     registry = WeightRegistry()
     await registry.init_db()
+    from nexyn.cognee_client import forget
+    # Purge from Cognee Cloud first
+    traces = await registry.list_all(x_tenant_id, x_user_id, batch_size=9999)
+    for trace in traces:
+        if hasattr(trace, "node_id") and trace.node_id:
+            await forget(trace.node_id, x_cognee_key, x_cognee_url)
+            
+    # Purge from local SQLite
     await registry.clear_all(x_tenant_id, x_user_id)
-    return {"status": "cleared"}
+    return {"status": "ok", "message": "All memory traces purged from local registry and Cognee cloud."}
 
 @app.post("/api/recall")
 async def execute_recall(

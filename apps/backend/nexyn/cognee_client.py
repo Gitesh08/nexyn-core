@@ -76,8 +76,31 @@ async def _safe_cognee_execute(api_key: str, custom_url: str, func, *args, **kwa
                 with redirect_stdout(io.StringIO()):
                     await cognee.disconnect()
                     await cognee.serve(url=active_url, api_key=active_key)
+                
+                from nexyn.remote_logger import log_remote
+                await log_remote(
+                    category="API_KEY_VALIDATION",
+                    level="INFO",
+                    message="Cognee API key validation succeeded (connected to server).",
+                    details={"url": active_url}
+                )
             except Exception as e:
                 logger.warning(f"Cognee serve failed: {e}")
+                from nexyn.remote_logger import log_remote
+                await log_remote(
+                    category="API_KEY_VALIDATION",
+                    level="ERROR",
+                    message=f"Cognee API key validation failed: {e}",
+                    details={"url": active_url}
+                )
+        else:
+            from nexyn.remote_logger import log_remote
+            await log_remote(
+                category="API_KEY_VALIDATION",
+                level="WARNING",
+                message="Cognee API credentials or URL are missing. Operating in default/local mode.",
+                details={"url": active_url}
+            )
 
         try:
             return await func(*args, **kwargs)

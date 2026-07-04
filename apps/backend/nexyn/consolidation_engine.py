@@ -18,18 +18,28 @@ class ConsolidationEngine:
         Pages through the active registry, evaluates the current weight, 
         and prunes if W_current <= prune_floor.
         """
-        logger.info("Starting consolidation sweep...")
+        from nexyn.remote_logger import log_remote
+        await log_remote(
+            category="LAYER_3_CONSOLIDATE",
+            level="INFO",
+            message="Starting memory consolidation sweep.",
+            tenant_id=tenant_id,
+            user_id=user_id
+        )
         
         batch_size = 100
         offset = 0
         now = datetime.now(timezone.utc)
+        
+        pruned_count = 0
+        kept_count = 0
         
         while True:
             traces = await self.registry.list_active(tenant_id, user_id, batch_size=batch_size, offset=offset)
             if not traces:
                 break
                 
-            kept_count = 0
+            kept_count_batch = 0
             for trace in traces:
                 elapsed_days = (now - trace.last_accessed).total_seconds() / 86400.0
                 
@@ -43,6 +53,15 @@ class ConsolidationEngine:
                     # Time to prune
                     if settings.consolidation_dry_run:
                         logger.info(f"[DRY RUN] Would prune node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})")
+                        await log_remote(
+                            category="LAYER_3_CONSOLIDATE",
+                            level="INFO",
+                            message=f"[DRY RUN] Would prune node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})",
+                            tenant_id=tenant_id,
+                            user_id=user_id,
+                            details={"text": trace.text}
+                        )
+                        kept_count_batch += 1
                         kept_count += 1
                         continue
                         
@@ -62,26 +81,51 @@ class ConsolidationEngine:
                             # Synthesize a bridge string
                             bridge_string = f"Concept '{active_neighbors[0]}' is semantically linked to Concept '{active_neighbors[1]}'."
                             logger.info(f"Edge-Stitching: Bridging orphaned concepts: '{bridge_string}'")
+                            await log_remote(
+                                category="LAYER_3_CONSOLIDATE",
+                                level="INFO",
+                                message=f"Edge-Stitching: Bridging orphaned concepts: '{bridge_string}'",
+                                tenant_id=tenant_id,
+                                user_id=user_id
+                            )
                             await cognee_client.remember(bridge_string, cognee_key, cognee_url=cognee_url, dataset=dataset_name)
                         
-                        # Delete from local SQLite registry.
-                        # We intentionally DO NOT call cognee_client.forget() because Cognee v1 
-                        # does not support deletion by custom hash, and our retrieval engine 
-                        # filters all results through this exact SQLite registry anyway.
                         await self.registry.mark_pruned(trace.node_id)
-                        # Delete from remote
                         await cognee_client.forget(trace.node_id, cognee_key, cognee_url)
                         logger.info(f"Pruned node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})")
+                        await log_remote(
+                            category="LAYER_3_CONSOLIDATE",
+                            level="INFO",
+                            message=f"Pruned node {trace.node_id} (W={w_current:.2f} <= {settings.prune_floor})",
+                            tenant_id=tenant_id,
+                            user_id=user_id,
+                            details={"text": trace.text, "decay_rate": trace.decay_rate, "elapsed_days": elapsed_days}
+                        )
+                        pruned_count += 1
                     except Exception as e:
-                        # Log error, mark pending, and move on.
                         logger.error(f"Failed to prune node {trace.node_id} in graph: {e}")
+                        await log_remote(
+                            category="LAYER_3_CONSOLIDATE",
+                            level="ERROR",
+                            message=f"Failed to prune node {trace.node_id}: {e}",
+                            tenant_id=tenant_id,
+                            user_id=user_id
+                        )
                         await self.registry.mark_pending_prune(trace.node_id)
-                        # pending_prune still counts as active in the query, so it stays in the list
+                        kept_count_batch += 1
                         kept_count += 1
                 else:
                     logger.debug(f"Kept node {trace.node_id} (W={w_current:.2f} > {settings.prune_floor})")
+                    kept_count_batch += 1
                     kept_count += 1
+ 
+            offset += kept_count_batch
 
-            offset += kept_count
-
-        logger.info("Consolidation sweep finished.")
+        await log_remote(
+            category="LAYER_3_CONSOLIDATE",
+            level="INFO",
+            message=f"Memory consolidation sweep finished. Pruned: {pruned_count}, Kept: {kept_count}.",
+            tenant_id=tenant_id,
+            user_id=user_id,
+            details={"pruned": pruned_count, "kept": kept_count}
+        )

@@ -41,6 +41,20 @@ background_tasks = set()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from nexyn.remote_logger import log_remote, close_db_pool
+    
+    # Initialize remote logging & log startup
+    await log_remote(
+        category="SYSTEM_START",
+        level="INFO",
+        message="Nexyn Core backend application starting up.",
+        details={
+            "environment": os.getenv("ENVIRONMENT", "development"),
+            "port": os.getenv("PORT", "8000"),
+            "cognee_url": os.getenv("COGNEE_URL", "")
+        }
+    )
+
     cognee_url = os.getenv("COGNEE_URL", "")
     cognee_api_key = os.getenv("COGNEE_API_KEY", "")
     
@@ -61,12 +75,20 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down...")
+    await log_remote(
+        category="SYSTEM_SHUTDOWN",
+        level="INFO",
+        message="Nexyn Core backend application shutting down."
+    )
         
     try:
         await cognee.disconnect()
         logger.info("Disconnected from Cognee server.")
     except Exception:
         pass
+
+    # Close PostgreSQL connection pool
+    await close_db_pool()
 
 app = FastAPI(title="Nexyn Core API", lifespan=lifespan)
 
@@ -108,6 +130,67 @@ async def get_memories(
         response.append(t_dict)
         
     return response
+
+@app.get("/api/logs")
+async def get_logs(
+    limit: int = 100,
+    category: str | None = None,
+    x_tenant_id: str | None = Header(None, alias="x-tenant-id"),
+    x_user_id: str | None = Header(None, alias="x-user-id")
+):
+    """Fetches system execution logs from remote PostgreSQL."""
+    from nexyn.remote_logger import get_db_pool
+    pool = await get_db_pool()
+    if pool is None:
+        return []
+    
+    try:
+        async with pool.acquire() as conn:
+            query = "SELECT id, timestamp, category, level, message, tenant_id, user_id, details FROM nexyn_logs"
+            conditions = []
+            params = []
+            
+            if x_tenant_id:
+                conditions.append(f"tenant_id = ${len(params) + 1}")
+                params.append(x_tenant_id)
+            if x_user_id:
+                conditions.append(f"user_id = ${len(params) + 1}")
+                params.append(x_user_id)
+            if category:
+                conditions.append(f"category = ${len(params) + 1}")
+                params.append(category)
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += f" ORDER BY timestamp DESC LIMIT ${len(params) + 1}"
+            params.append(limit)
+            
+            rows = await conn.fetch(query, *params)
+            
+            logs_result = []
+            for r in rows:
+                import json
+                details_data = {}
+                if r['details']:
+                    try:
+                        details_data = json.loads(r['details'])
+                    except Exception:
+                        details_data = r['details']
+                logs_result.append({
+                    "id": r['id'],
+                    "timestamp": r['timestamp'].isoformat() if r['timestamp'] else None,
+                    "category": r['category'],
+                    "level": r['level'],
+                    "message": r['message'],
+                    "tenant_id": r['tenant_id'],
+                    "user_id": r['user_id'],
+                    "details": details_data
+                })
+            return logs_result
+    except Exception as e:
+        logger.error(f"Error querying logs from Postgres: {e}")
+        return []
 
 async def event_generator(tenant_id: str, user_id: str):
     registry = WeightRegistry()

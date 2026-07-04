@@ -3,34 +3,35 @@ from unittest.mock import AsyncMock
 from datetime import datetime, timezone
 from nexyn.evaluation_engine import EvaluationEngine
 from nexyn.models import NormalizedPayload
-from nexyn.valence import ValenceResult
+from nexyn.models import ValenceResult
 
 @pytest.mark.asyncio
 async def test_evaluate_score_1_dropped(seeded_registry, mocker):
-    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=1, reasoning="junk"))
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=[ValenceResult(score=1, reasoning="junk", text="ok")])
     engine = EvaluationEngine(seeded_registry)
-    payload = NormalizedPayload(text="ok", timestamp=123.0, content_hash="abc")
+    payload = NormalizedPayload(text="ok", timestamp=123.0, content_hash="abc", tenant_id="mock_tenant", user_id="mock_user")
     
     await engine.evaluate(payload)
-    # Shouldn't be in registry
-    assert await seeded_registry.get("abc") is None
+    trace = await seeded_registry.get("abc")
+    assert trace is not None
+    assert trace.status == "dropped"
 
 @pytest.mark.asyncio
 async def test_evaluate_resonance_hit(seeded_registry, mocker):
-    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=[ValenceResult(score=3, reasoning="fact", text="already know this")])
     # Return a mocked resonance hit
     mocker.patch("nexyn.evaluation_engine.check_resonance", return_value={"raw": {"id": "existing-node"}})
     mock_touch = mocker.patch.object(seeded_registry, "touch_last_accessed", new_callable=AsyncMock)
     
     engine = EvaluationEngine(seeded_registry)
-    payload = NormalizedPayload(text="already know this", timestamp=123.0, content_hash="abc")
+    payload = NormalizedPayload(text="already know this", timestamp=123.0, content_hash="abc", tenant_id="mock_tenant", user_id="mock_user")
     
     await engine.evaluate(payload)
     mock_touch.assert_called_once_with("existing-node")
 
 @pytest.mark.asyncio
 async def test_evaluate_new_memory(seeded_registry, mocker):
-    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=ValenceResult(score=3, reasoning="fact"))
+    mocker.patch("nexyn.evaluation_engine.determine_valence", return_value=[ValenceResult(score=3, reasoning="fact", text="new fact")])
     mocker.patch("nexyn.evaluation_engine.check_resonance", return_value=None)
     
     # Mock cognee_client.remember
@@ -41,7 +42,7 @@ async def test_evaluate_new_memory(seeded_registry, mocker):
     mocker.patch("nexyn.cognee_client.remember", return_value=MockRememberResult())
     
     engine = EvaluationEngine(seeded_registry)
-    payload = NormalizedPayload(text="new fact", timestamp=123.0, content_hash="abc")
+    payload = NormalizedPayload(text="new fact", timestamp=123.0, content_hash="abc", tenant_id="mock_tenant", user_id="mock_user")
     
     await engine.evaluate(payload)
     

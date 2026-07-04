@@ -6,6 +6,8 @@ from datetime import datetime, timedelta, timezone
 @dataclass
 class MockMemoryTrace:
     node_id: str
+    tenant_id: str
+    user_id: str
     text: str
     dataset: str
     valence_score: int
@@ -31,6 +33,8 @@ def make_trace(text: str, score: int, hours_ago: int = 0, dataset: str = "genera
     stamped = now - timedelta(hours=hours_ago)
     return MockMemoryTrace(
         node_id=str(uuid.uuid4()),
+        tenant_id="mock_tenant",
+        user_id="mock_user",
         text=text,
         dataset=dataset,
         valence_score=score,

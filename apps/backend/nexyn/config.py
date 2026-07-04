@@ -2,6 +2,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Ensure workspace root .env is loaded before Settings instantiation
+env_path = Path(__file__).resolve().parents[3] / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Create default DB path in user home directory
 default_db_dir = Path.home() / ".nexyn"
@@ -24,6 +29,13 @@ class Settings(BaseSettings):
 
     # Storage
     registry_db_path: str = os.getenv("NEXYN_DB_PATH", default_db_path)
+
+    # Remote PostgreSQL Logs Configuration
+    nexyn_logs_db_host: str = "postgresql-nexyn.alwaysdata.net"
+    nexyn_logs_db_port: int = 5432
+    nexyn_logs_db_user: str = "nexyn"
+    nexyn_logs_db_password: str = ""
+    nexyn_logs_db_name: str = "nexyn"
 
     # External APIs
     NVIDIA_NIM_API_KEY: str | None = None

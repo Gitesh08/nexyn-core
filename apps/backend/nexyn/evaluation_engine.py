@@ -71,6 +71,15 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
     async def evaluate(self, payload: NormalizedPayload) -> dict:
         valences = await determine_valence(payload)
         
+        from nexyn.remote_logger import log_remote
+        await log_remote(
+            category="LAYER_2_EVALUATE",
+            level="INFO",
+            message=f"Starting evaluation: found {len(valences)} facts.",
+            tenant_id=payload.tenant_id,
+            user_id=payload.user_id
+        )
+
         responses = []
         for valence in valences:
             import hashlib
@@ -100,6 +109,14 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
             
             if valence.score == 1:
                 logger.debug(f"Payload '{fission_hash}' dropped (Score 1: {valence.reasoning})")
+                await log_remote(
+                    category="LAYER_2_EVALUATE",
+                    level="INFO",
+                    message=f"Fact dropped: '{fission_text[:50]}...' (Score 1: Junk/Ephemeral)",
+                    tenant_id=payload.tenant_id,
+                    user_id=payload.user_id,
+                    details={"text": fission_text, "reasoning": valence.reasoning}
+                )
                 responses.append({"status": "dropped", "valence_score": valence.score, "reasoning": valence.reasoning})
                 continue
 
@@ -125,6 +142,14 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                             contradicted_id = await self.detect_contradiction(fission_text, [resonance_hit], payload.nim_key)
                             if contradicted_id:
                                 logger.info(f"Resonance contradicted {contradicted_id}, forgetting old memory.")
+                                await log_remote(
+                                    category="LAYER_2_EVALUATE",
+                                    level="WARNING",
+                                    message=f"Resonance contradiction detected. Purging old memory {contradicted_id}.",
+                                    tenant_id=payload.tenant_id,
+                                    user_id=payload.user_id,
+                                    details={"new_text": fission_text, "old_text": resonance_hit.get("text")}
+                                )
                                 await cognee_client.forget(contradicted_id, payload.cognee_key)
                                 await self.registry.delete(contradicted_id)
                                 resonance_hit = None # Fall through to save new memory
@@ -132,6 +157,14 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                                 await self.registry.touch_last_accessed(node_id)
                                 await self.registry.delete(fission_hash)
                                 logger.debug(f"Reinforced resonance hit for '{fission_hash}'")
+                                await log_remote(
+                                    category="LAYER_2_EVALUATE",
+                                    level="INFO",
+                                    message=f"Resonance reinforced existing memory node {node_id}.",
+                                    tenant_id=payload.tenant_id,
+                                    user_id=payload.user_id,
+                                    details={"node_id": str(node_id), "text": fission_text}
+                                )
                                 responses.append({"status": "resonance_hit", "valence_score": valence.score, "reasoning": valence.reasoning, "node_id": node_id})
                                 continue
                         
@@ -181,6 +214,14 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                     await self.registry.delete(fission_hash)
                     await self.registry.upsert(trace)
                     logger.debug(f"Stored score {valence.score} memory {node_id}")
+                    await log_remote(
+                        category="LAYER_2_EVALUATE",
+                        level="INFO",
+                        message=f"Persisted memory node {node_id} (Score {valence.score}).",
+                        tenant_id=payload.tenant_id,
+                        user_id=payload.user_id,
+                        details={"text": fission_text, "reasoning": valence.reasoning}
+                    )
                     responses.append({"status": "persisted", "valence_score": valence.score, "reasoning": valence.reasoning, "node_id": str(node_id)})
 
                     # cognify() builds the knowledge graph — run best-effort, never block status
@@ -223,8 +264,22 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                                 fission_text = compressed_text
                                 fission_hash = hashlib.sha256(compressed_text.encode("utf-8")).hexdigest()
                                 logger.info("Ego Death complete. Proceeding with singular compressed master node.")
+                                await log_remote(
+                                    category="LAYER_2_EVALUATE",
+                                    level="WARNING",
+                                    message="Ego Death compression successful. Compressed core rules into a single master constraint list.",
+                                    tenant_id=payload.tenant_id,
+                                    user_id=payload.user_id
+                                )
                         except Exception as ego_err:
                             logger.error(f"Ego Death compression failed: {ego_err}")
+                            await log_remote(
+                                category="LAYER_2_EVALUATE",
+                                level="ERROR",
+                                message=f"Ego Death compression failed: {ego_err}",
+                                tenant_id=payload.tenant_id,
+                                user_id=payload.user_id
+                            )
                     
                     # Core rule (Normal Flow)
                     dataset_core = f"{payload.tenant_id}_{payload.user_id}_core_rules"
@@ -233,6 +288,14 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                     
                     if contradicted_id:
                         logger.info(f"Rule contradicts {contradicted_id}, forgetting old rule.")
+                        await log_remote(
+                            category="LAYER_2_EVALUATE",
+                            level="WARNING",
+                            message=f"Core rule contradiction resolved. Purging old core rule {contradicted_id}.",
+                            tenant_id=payload.tenant_id,
+                            user_id=payload.user_id,
+                            details={"new_text": fission_text}
+                        )
                         await cognee_client.forget(contradicted_id, payload.cognee_key, cognee_url=payload.cognee_url)
                         await self.registry.delete(contradicted_id)
                         logger.info(f"Purged zombie core rule {contradicted_id} from local registry.")
@@ -267,6 +330,15 @@ Output ONLY valid JSON in this format: {{"contradicts_id": "<id>" or null}}"""
                     await self.registry.delete(fission_hash)
                     await self.registry.upsert(trace)
                     logger.info(f"Stored core rule {node_id}")
+                    
+                    await log_remote(
+                        category="LAYER_2_EVALUATE",
+                        level="INFO",
+                        message=f"Persisted Core Instinct Rule node {node_id} (Score 5).",
+                        tenant_id=payload.tenant_id,
+                        user_id=payload.user_id,
+                        details={"text": fission_text, "reasoning": valence.reasoning}
+                    )
                     
                     if contradicted_id:
                         responses.append({"status": "contradiction_resolved", "valence_score": 5, "pruned_id": contradicted_id, "node_id": str(node_id), "reasoning": valence.reasoning})

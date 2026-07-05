@@ -350,15 +350,26 @@ export default function DocumentationPage() {
                 Nvidia Inference Integration
               </h2>
               <div className="prose prose-invert prose-lg max-w-none prose-p:leading-relaxed prose-p:text-[#A1A1AA]">
-                <p>
-                  The deep intelligence behind the Evaluator layer is powered directly by Nvidia microservices. By utilizing the highly optimized language models hosted natively on Nvidia architecture, Nexyn achieves lightning fast inference speeds capable of handling massive data throughput. 
+                <p className="mb-6">
+                  The Evaluator layer is powered by Nvidia NIM microservices, specifically utilizing the highly optimized <strong>meta/llama-3.1-8b-instruct</strong> model. We chose this specific architecture for three critical reasons:
                 </p>
+                <ul className="list-disc pl-6 space-y-3 mb-8 text-[#A1A1AA]">
+                  <li>
+                    <strong className="text-white">High-Tier Reasoning:</strong> Accurate biological Valence scoring requires deep contextual understanding without hallucinating.
+                  </li>
+                  <li>
+                    <strong className="text-white">Ultra-Low Latency:</strong> Evaluating massive amounts of incoming data inline requires sub-second response times to prevent pipeline bottlenecks.
+                  </li>
+                  <li>
+                    <strong className="text-white">Cost Efficiency:</strong> Running a highly optimized 8B model on Nvidia architecture allows for massive scale at a fraction of the cost of larger models.
+                  </li>
+                </ul>
                 <div className="bg-[#111111] border-l-4 border-[#76b900] p-6 rounded-r-xl my-10 shadow-lg">
                   <h4 className="text-[#76b900] font-bold text-lg mb-3 flex items-center gap-2">
                     <Cpu className="w-5 h-5" /> Ultra Low Latency Valuations
                   </h4>
                   <p className="m-0 text-[15px] leading-relaxed">
-                    Memory evaluation happens inline before data ever reaches the permanent database. This requires near zero latency. The Nvidia inference endpoints allow us to compute valence scores in milliseconds, ensuring the data ingestion pipeline never bottlenecks.
+                    Memory evaluation happens inline before data ever reaches the permanent database. This requires near zero latency. The Nvidia NIM endpoints running LLaMA 3.1 allow us to compute biological valence scores in milliseconds, ensuring your vector ingestion pipeline never lags.
                   </p>
                 </div>
               </div>
@@ -400,6 +411,18 @@ export default function DocumentationPage() {
                     <p className="mb-6">
                       Send data directly to the ingest endpoints. The biomimetic engine will automatically score the data and route it through the four cognitive layers. You can easily monitor the real time status of your memory graph through the live dashboard.
                     </p>
+                    
+                    <div className="bg-[#111111] border-l-4 border-[#3b82f6] p-6 rounded-r-xl mb-8 shadow-lg">
+                      <h4 className="text-[#3b82f6] font-bold text-lg mb-3 flex items-center gap-2">
+                        <Layers className="w-5 h-5" /> Cloud vs Open Source Multi-Tenancy
+                      </h4>
+                      <p className="m-0 text-[15px] leading-relaxed text-[#A1A1AA]">
+                        When using <strong>Cognee Cloud</strong>, every HTTP request is stateless. You must pass <code className="text-[#3b82f6]">tenant_id</code> and <code className="text-[#3b82f6]">user_id</code> into <code className="text-[#3b82f6]">nexyn.inject()</code> so the cloud server knows which memory graph to use. 
+                        <br /><br />
+                        However, when running <strong>Cognee Open Source locally</strong>, data isolation is handled natively via context variables. Simply leave the IDs blank in Nexyn, and instead pass <code className="text-[#3b82f6]">dataset_name="user_123"</code> directly into your <code className="text-[#3b82f6]">cognee.add()</code> calls to partition your users' data!
+                      </p>
+                    </div>
+
                     <div className="bg-[#050505] border border-[#1A1A1A] rounded-lg p-6 font-mono text-sm overflow-x-auto">
                       <pre className="text-[#A1A1AA] m-0"><code>{`import asyncio
 import cognee
@@ -407,12 +430,14 @@ import nexyn
 
 async def main():
     # 1. Initialize Nexyn's cognitive layer
+    # For Cognee Cloud: Pass cognee_url and cognee_api_key
+    # For Cognee Open Source (Local): Leave cognee_url empty
     await nexyn.inject(
         nim_api_key="nvapi-your-key-here", 
-        cognee_api_key="your_cognee_api_key",
-        cognee_url="https://api.cognee.ai",
-        tenant_id="default",
-        user_id="user_123"
+        cognee_api_key="your_cognee_api_key", # Leave empty for local open source
+        cognee_url="https://api.cognee.ai",   # Leave empty for local open source
+        tenant_id="default",                  # Leave empty for local open source
+        user_id="user_123"                    # Leave empty for local open source
     )
 
     # 2. Add memories normally (Nexyn automatically scores Valence)

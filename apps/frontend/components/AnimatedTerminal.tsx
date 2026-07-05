@@ -13,7 +13,7 @@ interface ScriptLine {
   typingSpeed?: number;
 }
 
-const script: ScriptLine[] = [
+const scriptCloud: ScriptLine[] = [
   { id: "1", type: "input", text: "$ pip install nexyn-core cognee", delayBefore: 500, typingSpeed: 30 },
   { id: "e1", type: "empty", text: "", delayBefore: 200 },
   
@@ -28,6 +28,33 @@ const script: ScriptLine[] = [
   { id: "e2", type: "empty", text: "", delayBefore: 200 },
   
   { id: "10", type: "input", text: "$ await cognee.add(\"Doug is the groom. The wedding is Sunday.\")", delayBefore: 600, typingSpeed: 25 },
+  { id: "11", type: "output", text: "→ valence score: 3.5 · fact recognized", delayBefore: 600 },
+  { id: "12", type: "output", text: "✓ saved to sensory buffer", delayBefore: 150 },
+  { id: "e3", type: "empty", text: "", delayBefore: 200 },
+  
+  { id: "13", type: "input", text: "$ await cognee.cognify()", delayBefore: 600, typingSpeed: 30 },
+  { id: "14", type: "output", text: "✓ graph built · 1 entity consolidated", delayBefore: 800 },
+  { id: "e4", type: "empty", text: "", delayBefore: 200 },
+  
+  { id: "15", type: "input", text: "$ await cognee.search(\"Where is Doug?\")", delayBefore: 600, typingSpeed: 30 },
+  { id: "16", type: "output", text: "✓ search 24ms · memory decay timer reset", delayBefore: 600 },
+  { id: "e5", type: "empty", text: "", delayBefore: 200 },
+  
+  { id: "17", type: "input", text: "$ await nexyn.sweep()", delayBefore: 600, typingSpeed: 30 },
+  { id: "18", type: "output", text: "✓ sweep complete · 0 dead nodes pruned", delayBefore: 600 },
+];
+
+const scriptLocal: ScriptLine[] = [
+  { id: "1", type: "input", text: "$ pip install nexyn-core cognee", delayBefore: 500, typingSpeed: 30 },
+  { id: "e1", type: "empty", text: "", delayBefore: 200 },
+  
+  { id: "2", type: "input", text: "$ await nexyn.inject(", delayBefore: 500, typingSpeed: 30 },
+  { id: "3", type: "input", text: "    nim_api_key=\"nvapi-your-key-here\"", delayBefore: 100, typingSpeed: 10 },
+  { id: "6", type: "input", text: ")", delayBefore: 100, typingSpeed: 10 },
+  { id: "7", type: "output", text: "✓ biological memory pipeline active · local open source connected", delayBefore: 500 },
+  { id: "e2", type: "empty", text: "", delayBefore: 200 },
+  
+  { id: "10", type: "input", text: "$ await cognee.add(\"Doug is the groom. The wedding is Sunday.\", dataset_name=\"user_123\")", delayBefore: 600, typingSpeed: 25 },
   { id: "11", type: "output", text: "→ valence score: 3.5 · fact recognized", delayBefore: 600 },
   { id: "12", type: "output", text: "✓ saved to sensory buffer", delayBefore: 150 },
   { id: "e3", type: "empty", text: "", delayBefore: 200 },
@@ -118,6 +145,7 @@ function highlightSyntax(text: string, type: LineType) {
 }
 
 export function AnimatedTerminal() {
+  const [activeMode, setActiveMode] = useState<"cloud" | "local">("cloud");
   const [renderedLines, setRenderedLines] = useState<{ id: string, text: string, type: LineType }[]>([]);
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
@@ -127,7 +155,19 @@ export function AnimatedTerminal() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
   
+  const script = activeMode === "cloud" ? scriptCloud : scriptLocal;
+
   const resetAnimation = () => {
+    setRenderedLines([]);
+    setCurrentLineIndex(0);
+    setCurrentCharIndex(0);
+    setIsDone(false);
+    setPlayCount(p => p + 1);
+  };
+
+  const switchMode = (mode: "cloud" | "local") => {
+    if (activeMode === mode) return;
+    setActiveMode(mode);
     setRenderedLines([]);
     setCurrentLineIndex(0);
     setCurrentCharIndex(0);
@@ -188,8 +228,20 @@ export function AnimatedTerminal() {
           <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
           <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
           <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
-          <div className="text-xs font-mono text-[#555555] select-none ml-4 flex items-center gap-2">
-            <span>cognee@localhost:8000</span>
+          
+          <div className="hidden sm:flex bg-[#050505] rounded-md p-1 ml-4 border border-[#333333]">
+            <button 
+              onClick={() => switchMode("cloud")}
+              className={`px-3 py-1 rounded text-[10px] font-mono tracking-widest transition-colors ${activeMode === "cloud" ? "bg-[#333333] text-white" : "text-[#888888] hover:text-white"}`}
+            >
+              COGNEE CLOUD
+            </button>
+            <button 
+              onClick={() => switchMode("local")}
+              className={`px-3 py-1 rounded text-[10px] font-mono tracking-widest transition-colors ${activeMode === "local" ? "bg-[#333333] text-white" : "text-[#888888] hover:text-white"}`}
+            >
+              OPEN SOURCE (LOCAL)
+            </button>
           </div>
         </div>
         <div className="text-[10px] font-mono tracking-widest text-[#555555] uppercase select-none">

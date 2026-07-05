@@ -18,7 +18,6 @@ import hashlib
 from nexyn.registry import WeightRegistry
 from nexyn.retrieval_engine import RetrievalEngine
 from nexyn.models import RecallRequest
-from tests.fixtures import seed_sample_memories
 from nexyn.router import router as nexyn_router
 from pydantic import BaseModel
 

@@ -86,6 +86,18 @@ function HeroTitle({ onComplete }: { onComplete: () => void }) {
 
 export function HeroSimulation({ onComplete }: { onComplete?: () => void }) {
   const [showRest, setShowRest] = useState(false);
+  const [pypiVersion, setPypiVersion] = useState("v1.0.0");
+
+  useEffect(() => {
+    fetch("https://pypi.org/pypi/nexyn-core/json")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.info?.version) {
+          setPypiVersion(`v${data.info.version}`);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch PyPI version:", err));
+  }, []);
 
   const handleComplete = () => {
     setShowRest(true);
@@ -107,7 +119,7 @@ export function HeroSimulation({ onComplete }: { onComplete?: () => void }) {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0A0A0A] border border-[#333333] hover:border-[#555555] hover:bg-[#111111] transition-all cursor-pointer mb-8 group"
         >
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-medium text-[#A1A1AA] group-hover:text-white transition-colors tracking-wide">Nexyn Core v1.0.0 is live on PyPI</span>
+          <span className="text-xs font-medium text-[#A1A1AA] group-hover:text-white transition-colors tracking-wide">Nexyn Core {pypiVersion} is live on PyPI</span>
           <svg className="w-3 h-3 text-[#555555] group-hover:text-white transition-colors ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

@@ -67,9 +67,13 @@ function PenIcon(props: React.SVGProps<SVGSVGElement>) {
 const team = [
   { 
     name: "Vinay Ghate", 
-    title: "Cognitive Architect",
-    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400&auto=format&fit=crop",
-    links: { github: "#", linkedin: "#" }
+    title: "AI Engineer",
+    image: "https://res.cloudinary.com/db7h39kx9/image/upload/v1783236208/vinay_gwvooh.jpg",
+    links: { 
+      github: "https://github.com/vinay-ghate", 
+      linkedin: "https://www.linkedin.com/in/vinay-ghate/",
+      website: "https://v1nay.is-a.dev/"
+    }
   },
   { 
     name: "Gitesh Mahadik", 

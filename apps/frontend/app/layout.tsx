@@ -16,6 +16,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Project Nexyn | The AI Memory Engine",
   description: "Scale your AI memory without the noise. Project Nexyn brings dynamic context pruning and neural plasticity to your data infrastructure.",
+  keywords: [
+    "AI memory",
+    "context bloat",
+    "vector database optimization",
+    "Cognee",
+    "knowledge graph",
+    "RAG optimization",
+    "LLM context window",
+    "memory decay",
+    "biomimetic AI",
+    "semantic search"
+  ],
 };
 
 export default function RootLayout({

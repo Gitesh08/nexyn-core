@@ -6,24 +6,28 @@ import { Plus } from "lucide-react";
 
 const faqs = [
   {
-    question: "What exactly is Nexyn?",
-    answer: "Nexyn gives your AI a biological memory. Instead of storing every single piece of data forever (which slows down your AI and increases costs), Nexyn automatically scores data importance, forgets useless noise over time, and keeps only the most important facts—just like a human brain."
+    question: "What is AI Context Bloat and how does it affect LLMs?",
+    answer: "Context bloat happens when an AI remembers every single detail indefinitely. This causes the AI's database to grow massive over time, which dramatically slows down response times, confuses the AI with irrelevant data, and drastically increases your API token costs."
   },
   {
-    question: "Doesn't Cognee already manage AI memory?",
-    answer: "Cognee is incredible for building knowledge graphs. However, without Nexyn, Cognee stores every piece of data permanently. Nexyn acts as a smart filter in front of Cognee, ensuring only valuable information enters and stays in the graph."
+    question: "How does Nexyn Core solve the context bloat problem?",
+    answer: "Nexyn gives your AI a 'biological' memory. Instead of storing everything forever, it scores new information for importance. Useful facts are kept alive, while useless noise naturally fades away and deletes itself over time—just like a human brain."
   },
   {
-    question: "How difficult is the integration?",
-    answer: "Very easy! Simply install the `nexyn-core` package. It works right out of the box with your existing Cognee code with zero complex configuration."
+    question: "What is the difference between Nexyn and standard Vector Databases?",
+    answer: "Standard vector databases (like Pinecone or Milvus) are simply hard drives for AI—they store whatever you give them forever. Nexyn is a smart filtering layer that sits on top of your database, deciding what is actually worth remembering and what should be forgotten."
   },
   {
-    question: "Will this slow down my AI?",
-    answer: "Not at all. The entire evaluation process runs in milliseconds using NVIDIA NIM infrastructure. In fact, by keeping your database lean and noise-free, your AI's response time actually gets much faster!"
+    question: "Does Nexyn integrate with Cognee?",
+    answer: "Yes! Nexyn is specifically designed as a drop-in upgrade for Cognee. It perfectly wraps around Cognee's graph architecture, ensuring that only high-value, curated information ever enters your Cognee knowledge graph."
   },
   {
-    question: "Is this open source?",
-    answer: "Yes! Nexyn Core is fully open-source and free to use."
+    question: "Will adding a memory evaluation layer slow down my AI?",
+    answer: "No. The evaluation process runs in milliseconds using blazing-fast NVIDIA NIM infrastructure. Because Nexyn keeps your database incredibly lean and noise-free, your overall AI retrieval and response times will actually become much faster."
+  },
+  {
+    question: "Is Nexyn open source and free to use?",
+    answer: "Yes, Nexyn Core is a 100% open-source Python package (MIT License). You can install it via pip and use it completely free for both personal and commercial projects."
   }
 ];
 
@@ -34,8 +38,25 @@ export function FAQSection() {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="w-full max-w-[800px] mx-auto pt-24 pb-12 px-6 font-sans relative z-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="text-center mb-16">
         <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tighter">
           Frequently Asked Questions

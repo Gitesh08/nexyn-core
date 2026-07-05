@@ -68,6 +68,9 @@ export function Navbar() {
             <Link href="/documentation" className="text-[#A1A1AA] hover:text-white transition-colors">
               Documentation
             </Link>
+            <a href="#blog" className="text-[#A1A1AA] hover:text-white transition-colors">
+              Insights
+            </a>
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3 md:border-l md:border-[#333333] md:pl-6">
@@ -108,6 +111,13 @@ export function Navbar() {
             >
               Documentation
             </Link>
+            <a 
+              href="#blog" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-[#A1A1AA] hover:text-white transition-colors text-sm font-medium"
+            >
+              Insights
+            </a>
             <a 
               href="https://github.com/Gitesh08/nexyn-core" 
               target="_blank" 

@@ -1,0 +1,22 @@
+# Nexyn Core - Biomimetic AI Memory
+
+Nexyn Core is a biomimetic memory upgrade layer for AI systems, specifically designed to wrap around Cognee. It intercepts vector memory ingestion and retrieval to inject biological rules like Valence, Consolidation, and Decay.
+
+## The Context Bloat Problem
+Without a filtering layer, AI knowledge graphs store every piece of data permanently, leading to massive token costs, slow retrieval times, and context window bloat.
+
+## How Nexyn Solves It
+1. **Zero Token Bloat**: Drops low-valence noise instantly at ingestion before it enters the database.
+2. **Biological Decay**: Working memories naturally dissolve from the graph over time based on decay rates assigned by the LLM.
+3. **Instinct Consolidation**: Highly accessed memory clusters are permanently compressed into lightweight behavioral rules.
+4. **Rehearsal**: Accessing a memory resets its decay clock, keeping highly relevant information alive.
+
+## Technical Specs & Integration
+- **Architecture**: A 4-layer pipeline (Sensory Buffer, Evaluator, Consolidation, Retrieval).
+- **Integration**: Drop-in compatible with standard Cognee workflows.
+- **Python Package**: `pip install nexyn-core`
+- **GitHub Repository**: https://github.com/Gitesh08/nexyn-core
+- **License**: MIT Open Source
+
+## Founders
+Built by Vinay Ghate, Gitesh Mahadik, and Shruti Birari.

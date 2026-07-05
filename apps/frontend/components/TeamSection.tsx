@@ -88,9 +88,13 @@ const team = [
   },
   { 
     name: "Shruti Birari", 
-    title: "Data Modeling",
-    image: "https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=400&auto=format&fit=crop",
-    links: { github: "#", linkedin: "#" }
+    title: "Data Engineer",
+    image: "https://res.cloudinary.com/db7h39kx9/image/upload/v1783257811/32cbedef-548f-4c1d-9b65-1752c5ed5e74_dqvidn.jpg",
+    links: { 
+      github: "https://github.com/shrutibirarii", 
+      linkedin: "http://www.linkedin.com/in/shruti-birari",
+      website: "https://shruti-birari.github.io/"
+    }
   },
 ];
 

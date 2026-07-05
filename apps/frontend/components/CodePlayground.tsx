@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "lucide-react";
 
 export function CodePlayground() {
-  const [activeTab, setActiveTab] = useState<"vanilla" | "nexyn">("nexyn");
+  const [activeTab, setActiveTab] = useState<"vanilla" | "nexyn-cloud" | "nexyn-local">("nexyn-cloud");
 
   return (
     <div id="playground" className="w-full max-w-4xl mx-auto py-24 px-6 relative z-10 font-sans">
@@ -39,16 +39,28 @@ export function CodePlayground() {
             >
               Native Cognee
             </button>
-            <button
-              onClick={() => setActiveTab("nexyn")}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2 ${activeTab === "nexyn"
-                  ? "bg-white text-black"
-                  : "text-[#888888] hover:text-white"
-                }`}
-            >
-              <Terminal className="w-3.5 h-3.5" />
-              Nexyn Core
-            </button>
+            <div className="flex bg-[#050505] rounded p-1 border border-[#333333]">
+              <button
+                onClick={() => setActiveTab("nexyn-cloud")}
+                className={`px-3 py-1 rounded text-[10px] font-mono transition-colors flex items-center gap-2 ${activeTab === "nexyn-cloud"
+                    ? "bg-[#333333] text-white"
+                    : "text-[#888888] hover:text-white"
+                  }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                Nexyn (Cloud)
+              </button>
+              <button
+                onClick={() => setActiveTab("nexyn-local")}
+                className={`px-3 py-1 rounded text-[10px] font-mono transition-colors flex items-center gap-2 ${activeTab === "nexyn-local"
+                    ? "bg-[#333333] text-white"
+                    : "text-[#888888] hover:text-white"
+                  }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                Nexyn (Local)
+              </button>
+            </div>
           </div>
         </div>
 
@@ -82,9 +94,9 @@ export function CodePlayground() {
                   <span className="text-[#888888]">{"// Every future search drags this noise along with it."}</span><br />
                 </div>
               </motion.div>
-            ) : (
+            ) : activeTab === "nexyn-cloud" ? (
               <motion.div
-                key="nexyn"
+                key="nexyn-cloud"
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
@@ -92,11 +104,11 @@ export function CodePlayground() {
                 className="absolute inset-0 p-6"
               >
                 <div className="text-[#A1A1AA]">
-                  <span className="text-[#888888]">{"// With Nexyn: Biological Memory Consolidation"}</span><br />
+                  <span className="text-[#888888]">{"// With Nexyn: Biological Memory (Cognee Cloud)"}</span><br />
                   <span className="text-white">import</span> cognee<br />
                   <span className="text-white">import</span> nexyn<br />
                   <br />
-                  <span className="text-[#888888]">{"// 1. Initialize Nexyn's cognitive layer"}</span><br />
+                  <span className="text-[#888888]">{"// 1. Initialize Nexyn's cognitive layer for Cloud"}</span><br />
                   <span className="text-white">await</span> nexyn.inject(<br />
                   &nbsp;&nbsp;&nbsp;&nbsp;nim_api_key=<span className="text-[#A1A1AA]">"nvapi-your-key-here"</span>,<br />
                   &nbsp;&nbsp;&nbsp;&nbsp;cognee_api_key=<span className="text-[#A1A1AA]">"your_cognee_key"</span>,<br />
@@ -108,6 +120,39 @@ export function CodePlayground() {
                   <span className="text-[#888888]">{"// 2. Add memories (Nexyn automatically evaluates Valence)"}</span><br />
                   <span className="text-white">await</span> cognee.add(<span className="text-[#A1A1AA]">"Doug is the groom."</span>); <span className="text-[#888888]">{"// Kept"}</span><br />
                   <span className="text-white">await</span> cognee.add(<span className="text-[#A1A1AA]">"User pasted a 500-page ToS."</span>); <span className="text-[#888888]">{"// Dropped"}</span><br />
+                  <br />
+                  <span className="text-[#888888]">{"// 3. Compile graph (Only high-valence data survives)"}</span><br />
+                  <span className="text-white">await</span> cognee.cognify();<br />
+                  <br />
+                  <span className="text-[#888888]">{"// 4. Search triggers decay physics & memory rehearsal"}</span><br />
+                  <span className="text-white">await</span> cognee.search(<span className="text-[#A1A1AA]">"Who is Doug?"</span>);<br />
+                  <br />
+                  <span className="text-[#888888]">{"// 5. Sweep permanently prunes dead memories"}</span><br />
+                  <span className="text-white">await</span> nexyn.sweep();<br />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="nexyn-local"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 p-6"
+              >
+                <div className="text-[#A1A1AA]">
+                  <span className="text-[#888888]">{"// With Nexyn: Biological Memory (Local Open Source)"}</span><br />
+                  <span className="text-white">import</span> cognee<br />
+                  <span className="text-white">import</span> nexyn<br />
+                  <br />
+                  <span className="text-[#888888]">{"// 1. Initialize Nexyn's cognitive layer for Local"}</span><br />
+                  <span className="text-white">await</span> nexyn.inject(<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;nim_api_key=<span className="text-[#A1A1AA]">"nvapi-your-key-here"</span><br />
+                  )<br />
+                  <br />
+                  <span className="text-[#888888]">{"// 2. Add memories (Nexyn automatically evaluates Valence)"}</span><br />
+                  <span className="text-white">await</span> cognee.add(<span className="text-[#A1A1AA]">"Doug is the groom."</span>, dataset_name=<span className="text-[#A1A1AA]">"user_123"</span>); <span className="text-[#888888]">{"// Kept"}</span><br />
+                  <span className="text-white">await</span> cognee.add(<span className="text-[#A1A1AA]">"User pasted a 500-page ToS."</span>, dataset_name=<span className="text-[#A1A1AA]">"user_123"</span>); <span className="text-[#888888]">{"// Dropped"}</span><br />
                   <br />
                   <span className="text-[#888888]">{"// 3. Compile graph (Only high-valence data survives)"}</span><br />
                   <span className="text-white">await</span> cognee.cognify();<br />

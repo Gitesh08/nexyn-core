@@ -36,7 +36,11 @@ pip install nexyn-core
 
 ## 🚀 Usage
 
-Nexyn is designed to be completely invisible. You simply initialize it once, and it automatically intercepts your native Cognee calls to apply biological physics. You don't need to learn a new API.
+Nexyn is designed to be completely invisible and is **100% compatible with both Cognee Cloud and Cognee Open Source (Local)**. 
+
+> **Cloud vs Local Multi-Tenancy:** If you are using **Cognee Cloud**, pass `tenant_id` and `user_id` to `nexyn.inject()` to isolate your users' memory graphs. If you are running **Cognee Open Source locally**, leave these parameters blank in Nexyn, and instead pass `dataset_name="user_123"` directly into your `cognee.add()` calls to partition your data natively!
+
+You simply initialize it once, and it automatically intercepts your native Cognee calls to apply biological physics. You don't need to learn a new API.
 
 ```python
 import asyncio
@@ -45,12 +49,14 @@ import nexyn
 
 async def main():
     # 1. Initialize Nexyn's cognitive layer
+    # For Cognee Cloud: Pass cognee_url and cognee_api_key
+    # For Cognee Open Source (Local): Leave cognee_url empty
     await nexyn.inject(
         nim_api_key="nvapi-your-key-here", 
-        cognee_api_key="your_cognee_api_key",
-        cognee_url="https://api.cognee.ai",
-        tenant_id="default",
-        user_id="user_123"
+        cognee_api_key="your_cognee_api_key", # Leave empty for local open source
+        cognee_url="https://api.cognee.ai",   # Leave empty for local open source
+        tenant_id="default",                  # Leave empty for local open source
+        user_id="user_123"                    # Leave empty for local open source
     )
 
     # 2. Add memories normally (Nexyn automatically scores Valence)

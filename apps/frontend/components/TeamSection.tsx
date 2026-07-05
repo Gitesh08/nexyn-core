@@ -90,6 +90,7 @@ const team = [
     name: "Shruti Birari", 
     title: "Data Engineer",
     image: "https://res.cloudinary.com/db7h39kx9/image/upload/v1783257811/32cbedef-548f-4c1d-9b65-1752c5ed5e74_dqvidn.jpg",
+    imagePosition: "object-top",
     links: { 
       github: "https://github.com/shrutibirarii", 
       linkedin: "http://www.linkedin.com/in/shruti-birari",
@@ -128,7 +129,7 @@ export function TeamSection() {
                 <img 
                   src={member.image} 
                   alt={member.name}
-                  className="w-full h-full object-cover grayscale contrast-[1.2] group-hover:grayscale-0 transition-all duration-500"
+                  className={`w-full h-full object-cover ${member.imagePosition || 'object-center'} grayscale contrast-[1.2] group-hover:grayscale-0 transition-all duration-500`}
                 />
               </div>
 

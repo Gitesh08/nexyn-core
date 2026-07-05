@@ -10,6 +10,7 @@ import { HeroSimulation } from "@/components/HeroSimulation";
 import { FAQSection } from "@/components/FAQSection";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Footer } from "@/components/Footer";
+import { BlogSection } from "@/components/BlogSection";
 
 export default function Home() {
   const [heroDone, setHeroDone] = useState(false);
@@ -39,6 +40,10 @@ export default function Home() {
 
             <ScrollReveal>
               <FAQSection />
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <BlogSection />
             </ScrollReveal>
 
             {/* Footer / Team Section */}

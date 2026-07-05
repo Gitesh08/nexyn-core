@@ -7,8 +7,8 @@
   
   <br />
   
-  <a href="https://synapse-ivory-ten.vercel.app"><strong>🌐 Website</strong></a> |
-  <a href="https://synapse-ivory-ten.vercel.app/demo"><strong>🎮 Interactive Demo</strong></a>
+  <a href="https://nexyn-core.vercel.app"><strong>🌐 Website</strong></a> |
+  <a href="https://nexyn-core.vercel.app/demo"><strong>🎮 Demo</strong></a>
 </div>
 
 <br />
@@ -71,8 +71,11 @@ if __name__ == "__main__":
 
 ## 🎮 Interactive Dashboard
 Want to see the biological pipeline in action? 
-Check out our live visual dashboard to watch memories decay, prune, and consolidate in real-time:
-👉 **[Live Demo](https://synapse-ivory-ten.vercel.app/demo)**
+👉 **[Live Demo](https://nexyn-core.vercel.app/demo)**
+
+## 📖 Read the Blog
+Want to dive deeper into the theory behind Nexyn? Check out our official Medium article:
+👉 **[Nexyn: Teaching AI to forget, so it can actually remember.](https://medium.com/@gitesh08/nexyn-teaching-ai-to-forget-so-it-can-actually-remember-c5ba0027657b)**
 
 ## 📝 License
 

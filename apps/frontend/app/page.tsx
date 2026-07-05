@@ -9,6 +9,7 @@ import { TeamSection } from "@/components/TeamSection";
 import { HeroSimulation } from "@/components/HeroSimulation";
 import { FAQSection } from "@/components/FAQSection";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
   const [heroDone, setHeroDone] = useState(false);
@@ -44,6 +45,8 @@ export default function Home() {
             <ScrollReveal>
               <TeamSection />
             </ScrollReveal>
+            
+            <Footer />
           </motion.div>
         )}
       </AnimatePresence>

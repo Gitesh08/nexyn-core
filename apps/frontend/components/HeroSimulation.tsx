@@ -61,7 +61,7 @@ function HeroTitle({ onComplete }: { onComplete: () => void }) {
   }, []);
 
   return (
-    <h1 className="text-4xl md:text-6xl lg:text-7xl font-sans font-semibold tracking-tighter text-white mb-6 leading-[1.1] min-h-[100px] md:min-h-[160px]">
+    <h1 className="text-3xl md:text-6xl lg:text-7xl font-sans font-semibold tracking-tighter text-white mb-6 leading-[1.1] min-h-[80px] md:min-h-[160px]">
       <span className="relative">
         {typed1}
         {phase === "typing1" && (
@@ -196,7 +196,7 @@ export function HeroSimulation({ onComplete }: { onComplete?: () => void }) {
                   <div className="bg-[#050505] border border-[#222222] group-hover:border-[#444444] rounded-2xl overflow-hidden relative transition-all duration-500 hover:shadow-[0_0_50px_rgba(59,130,246,0.1)]">
                     
                     {/* FAKE UI TEASER */}
-                    <div className="opacity-40 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none p-6 md:p-10 flex flex-col gap-6 blur-[2px] group-hover:blur-[4px]">
+                    <div className="opacity-40 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none p-4 md:p-10 flex flex-col gap-6 blur-[2px] group-hover:blur-[4px]">
                       <div className="flex justify-between items-center border-b border-[#333333] pb-4">
                         <div className="flex gap-4">
                           <div className="w-32 h-4 bg-[#222222] rounded" />
@@ -221,20 +221,20 @@ export function HeroSimulation({ onComplete }: { onComplete?: () => void }) {
                     </div>
 
                     {/* OVERLAY CTA */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-6 text-center">
-                      <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20 group-hover:scale-110 transition-transform duration-500">
-                        <Activity className="w-8 h-8 text-blue-400" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4 md:p-6 text-center">
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20 group-hover:scale-110 transition-transform duration-500">
+                        <Activity className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
                       </div>
-                      <h2 className="text-2xl md:text-4xl font-semibold text-white mb-4 tracking-tight">
+                      <h2 className="text-xl md:text-4xl font-semibold text-white mb-4 tracking-tight leading-tight">
                         The Context Bloat Problem <br className="hidden md:block"/> (And How We Fix It)
                       </h2>
-                      <p className="text-[#A1A1AA] max-w-lg mx-auto mb-8 text-sm md:text-base">
+                      <p className="text-[#A1A1AA] max-w-lg mx-auto mb-6 md:mb-8 text-xs md:text-base">
                         Experience the difference between naive API hoarding and biomimetic pruning in our interactive sandbox.
                       </p>
-                      <div className="flex items-center justify-center gap-2 bg-white text-black px-8 h-12 rounded-full font-medium transition-all group-hover:bg-blue-500 group-hover:text-white shadow-lg">
-                        <Sparkles className="w-4 h-4" />
-                        Launch Live Demo Sandbox
-                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      <div className="flex items-center justify-center gap-2 bg-white text-black px-6 md:px-8 h-10 md:h-12 rounded-full font-medium text-xs md:text-sm transition-all group-hover:bg-blue-500 group-hover:text-white shadow-lg">
+                        <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
+                        Launch Live Demo
+                        <ArrowRight className="w-3 h-3 md:w-4 md:h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
 

@@ -364,7 +364,7 @@ export default function LogsPage() {
           {ingestResult && (
             <div className="mt-4 bg-black border border-[#333333] rounded-md p-4 relative z-10">
               <div className="text-xs text-[#888888] mb-2 uppercase tracking-widest font-medium">Result</div>
-              <div className="text-sm text-white font-mono">{JSON.stringify(ingestResult)}</div>
+              <div className="text-sm text-white font-mono overflow-x-auto whitespace-pre-wrap break-all custom-scrollbar pb-2">{JSON.stringify(ingestResult, null, 2)}</div>
             </div>
           )}
         </div>
@@ -619,9 +619,9 @@ export default function LogsPage() {
               initial={{ opacity: 0, width: 0, marginLeft: 0 }}
               animate={{ opacity: 1, width: 350, marginLeft: 32 }}
               exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-              className="hidden lg:block shrink-0 border-l border-[#333333] pt-8 lg:pt-0 overflow-hidden"
+              className="hidden lg:block shrink-0 border-l border-[#333333] pt-8 lg:pt-0 overflow-hidden sticky top-24 h-[calc(100vh-8rem)]"
             >
-              <div className="w-[350px]">
+              <div className="w-[350px] h-full">
                 <DemoScriptSidebar onClose={() => setShowScript(false)} />
               </div>
             </motion.div>

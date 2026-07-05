@@ -27,7 +27,7 @@ export function DemoScriptSidebar({ onClose }: { onClose?: () => void }) {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         
         {/* Step 1 */}
         <div className="relative pl-4 border-l-2 border-[#a855f7]/50">
@@ -59,8 +59,11 @@ export function DemoScriptSidebar({ onClose }: { onClose?: () => void }) {
             Sweep & Prune
           </h3>
           <p className="text-xs text-[#AAAAAA] mb-3 leading-relaxed">
-            Watch the <strong>Current W.</strong> value count down. Click <strong>Sweep & Prune</strong> to manually fast-forward time.
+            Watch the <strong>Current W.</strong> value count down. Click <strong>Sweep & Prune</strong> repeatedly to manually fast-forward time until the weight hits zero.
           </p>
+          <div className="bg-black/50 border border-[#222222] rounded p-2 text-[10px] text-[#888888] mb-2">
+            <strong className="text-[#E5E5E5]">Example:</strong> Try ingesting <em>"I drank coffee"</em> (low valence), then click <strong>Sweep & Prune</strong> 2-3 times. Watch it disappear!
+          </div>
           <div className="bg-black/50 border border-[#222222] rounded p-2 text-[10px] text-[#888888]">
             <strong className="text-[#E5E5E5]">What happens:</strong> Memories that hit zero weight are marked as <span className="text-[#A1A1AA] font-mono">pending_prune</span> and are forgotten forever.
           </div>

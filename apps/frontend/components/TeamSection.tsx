@@ -43,21 +43,50 @@ function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  );
+}
+
+function PenIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+      <path d="M2 2l7.586 7.586"/>
+      <circle cx="11" cy="11" r="2"/>
+    </svg>
+  );
+}
+
 const team = [
   { 
     name: "Vinay Ghate", 
     title: "Cognitive Architect",
-    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400&auto=format&fit=crop",
+    links: { github: "#", linkedin: "#" }
   },
   { 
     name: "Gitesh Mahadik", 
-    title: "Infrastructure Lead",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400&auto=format&fit=crop"
+    title: "Full stack AI Engineer",
+    image: "https://res.cloudinary.com/db7h39kx9/image/upload/v1783226970/hero-image_xcgdmw.png",
+    links: { 
+      github: "https://github.com/Gitesh08", 
+      linkedin: "https://www.linkedin.com/in/gitesh-mahadik-7487961a0/",
+      website: "https://gitesh.is-a.dev",
+      medium: "https://medium.com/@gitesh08"
+    }
   },
   { 
     name: "Shruti Birari", 
     title: "Data Modeling",
-    image: "https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=400&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=400&auto=format&fit=crop",
+    links: { github: "#", linkedin: "#" }
   },
 ];
 
@@ -108,18 +137,26 @@ export function TeamSection() {
 
                 {/* Socials */}
                 <div className="flex items-center justify-end gap-3 mt-6">
-                  <a 
-                    href="#" 
-                    className="text-[#A1A1AA] hover:text-white transition-colors duration-300"
-                  >
-                    <GithubIcon />
-                  </a>
-                  <a 
-                    href="#" 
-                    className="text-[#A1A1AA] hover:text-white transition-colors duration-300"
-                  >
-                    <LinkedinIcon />
-                  </a>
+                  {member.links.website && (
+                    <a href={member.links.website} target="_blank" rel="noopener noreferrer" className="text-[#A1A1AA] hover:text-white transition-colors duration-300" title="Website">
+                      <GlobeIcon />
+                    </a>
+                  )}
+                  {member.links.medium && (
+                    <a href={member.links.medium} target="_blank" rel="noopener noreferrer" className="text-[#A1A1AA] hover:text-white transition-colors duration-300" title="Medium">
+                      <PenIcon />
+                    </a>
+                  )}
+                  {member.links.github && (
+                    <a href={member.links.github} target="_blank" rel="noopener noreferrer" className="text-[#A1A1AA] hover:text-white transition-colors duration-300" title="GitHub">
+                      <GithubIcon />
+                    </a>
+                  )}
+                  {member.links.linkedin && (
+                    <a href={member.links.linkedin} target="_blank" rel="noopener noreferrer" className="text-[#A1A1AA] hover:text-white transition-colors duration-300" title="LinkedIn">
+                      <LinkedinIcon />
+                    </a>
+                  )}
                 </div>
               </div>
 

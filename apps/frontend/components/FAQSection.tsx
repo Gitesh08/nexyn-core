@@ -7,23 +7,23 @@ import { Plus } from "lucide-react";
 const faqs = [
   {
     question: "What exactly is Nexyn?",
-    answer: "Nexyn is a biomimetic memory layer that sits on top of Cognee. It adds automated importance evaluation, mathematical memory decay, and instinctual consolidation, preventing context bloat and keeping your AI's knowledge graph lean and relevant."
+    answer: "Nexyn gives your AI a biological memory. Instead of storing every single piece of data forever (which slows down your AI and increases costs), Nexyn automatically scores data importance, forgets useless noise over time, and keeps only the most important facts—just like a human brain."
   },
   {
     question: "Doesn't Cognee already manage AI memory?",
-    answer: "Cognee is a powerful engine for building and querying knowledge graphs. However, without a filtering layer, every piece of data is stored permanently, causing context bloat. Nexyn wraps Cognee by scoring each input before it enters the graph, ensuring only high-value information is retained and stale data naturally decays."
+    answer: "Cognee is incredible for building knowledge graphs. However, without Nexyn, Cognee stores every piece of data permanently. Nexyn acts as a smart filter in front of Cognee, ensuring only valuable information enters and stays in the graph."
   },
   {
     question: "How difficult is the integration?",
-    answer: "Very simple. Just install nexyn-core and call `nexyn.remember()` instead of `cognee.remember()`. Nexyn intercepts the call, evaluates the input's importance score, and decides whether to store, decay, or drop it. No changes needed to the rest of your Cognee setup."
+    answer: "Very easy! Simply install the `nexyn-core` package. It works right out of the box with your existing Cognee code with zero complex configuration."
   },
   {
-    question: "Does the evaluation layer add high latency?",
-    answer: "Minimal impact. The evaluation layer calls a fast NIM-hosted language model with a strict schema response. In practice this adds under a second to the ingest path. The improvement in retrieval quality and reduced graph bloat far outweighs this overhead."
+    question: "Will this slow down my AI?",
+    answer: "Not at all. The entire evaluation process runs in milliseconds using NVIDIA NIM infrastructure. In fact, by keeping your database lean and noise-free, your AI's response time actually gets much faster!"
   },
   {
     question: "Is this open source?",
-    answer: "Yes. Nexyn is fully open-source. You can self-host the backend on any Python-compatible server and point it at your own Cognee instance, or use it alongside Cognee Cloud."
+    answer: "Yes! Nexyn Core is fully open-source and free to use."
   }
 ];
 

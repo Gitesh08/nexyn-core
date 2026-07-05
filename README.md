@@ -2,7 +2,7 @@
     <img src="https://raw.githubusercontent.com/Gitesh08/nexyn-core/main/apps/frontend/public/nexyn-logo.svg" alt="Nexyn Logo" width="240" />
   <p><strong>Biological Memory Consolidation for Cognee</strong></p>
   
-  [![PyPI version](https://badge.fury.io/py/nexyn-core.svg)](https://badge.fury.io/py/nexyn-core)
+  [![PyPI version](https://img.shields.io/pypi/v/nexyn-core.svg?color=blue)](https://pypi.org/project/nexyn-core/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   
   <br />
